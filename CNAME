@@ -1,0 +1,3 @@
+git add CNAME
+git commit -m "plsmonkey.com"
+git push origin main

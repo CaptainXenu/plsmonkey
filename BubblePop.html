@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Tap Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000000; /* Black background by default */
+        }
+        .bubble {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: absolute;
+            transition: none; /* No transition for instant movement */
+            cursor: pointer;
+        }
+        #goodBubble {
+            background-color: rgba(0, 191, 255, 0.7); /* Semi-transparent blue */
+        }
+        .badBubble {
+            background-color: rgba(255, 0, 0, 0.7); /* Semi-transparent red */
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+        }
+        #themeToggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        #speedMeter {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            color: #333;
+        }
+        #nameEntryScreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 15%;
+            z-index: 1000;
+        }
+        #nameEntryScreen h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        #nameEntryScreen input {
+            width: 80px;
+            padding: 8px;
+            font-size: 18px;
+            text-transform: uppercase;
+            margin-right: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+        #nameEntryScreen button {
+            padding: 8px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #nameEntryScreen button:hover {
+            background-color: #45a049;
+        }
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 10%;
+            z-index: 1000;
+        }
+        #gameOver h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: popIn 0.5s ease-out;
+        }
+        #gameOver .your-score {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #4CAF50;
+        }
+        #gameOver .rank {
+            font-size: 22px;
+            margin-bottom: 30px;
+            color: #FFD700;
+        }
+        #gameOver #highScores {
+            margin: 20px 0;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        #gameOver #highScores h3 {
+            margin-bottom: 10px;
+        }
+        #gameOver button {
+            padding: 10px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        #gameOver button:hover {
+            transform: scale(1.05);
+        }
+        #retryButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #shareButton {
+            background-color: #1E90FF;
+            color: white;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="timer">Time: 60</div>
+    <button id="themeToggle">💡</button>
+    <div id="speedMeter">Speed: 0%</div>
+    <div id="goodBubble" class="bubble"></div>
+    <div id="nameEntryScreen">
+        <h1>Enter Your Initials</h1>
+        <div>
+            <input type="text" id="nameInput" maxlength="3" placeholder="ABC">
+            <button id="submitName">Submit</button>
+        </div>
+    </div>
+    <div id="gameOver">
+        <h1>Game Over</h1>
+        <div class="your-score"></div>
+        <div class="rank"></div>
+        <div id="highScores"></div>
+        <button id="retryButton">Play Again</button>
+        <button id="shareButton">Share Score</button>
+    </div>
+
+    <script>
+        const goodBubble = document.getElementById('goodBubble');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const speedMeter = document.getElementById('speedMeter');
+        const nameEntryScreen = document.getElementById('nameEntryScreen');
+        const gameOverScreen = document.getElementById('gameOver');
+        const retryButton = document.getElementById('retryButton');
+        const shareButton = document.getElementById('shareButton');
+        const highScoresDisplay = document.getElementById('highScores');
+        const themeToggle = document.getElementById('themeToggle');
+        const nameInput = document.getElementById('nameInput');
+        const submitName = document.getElementById('submitName');
+        let score = 0;
+        let bubbles = [];
+        let animationFrame = null;
+        let timer = 60; // 60 seconds
+        let timerInterval = null;
+        let isDarkMode = false;
+        let clickCount = 0; // Track clicks for speed increase
+        const MAX_CLICKS = 77; // Number of clicks for 100%
+
+        // Load high scores from localStorage
+        let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+        console.log('Initial highScores loaded:', highScores);
+
+        // Function to create a bubble object
+        function createBubble(isGood = false) {
+            const bubble = isGood ? goodBubble : document.createElement('div');
+            if (!isGood) {
+                bubble.className = 'badBubble bubble';
+                document.body.appendChild(bubble);
+            }
+            const baseSpeed = isGood ? 2 : (Math.random() - 0.5) * 4; // Blue starts positive
+            return {
+                element: bubble,
+                posX: Math.random() * (window.innerWidth - 50),
+                posY: Math.random() * (window.innerHeight - 50),
+                speedX: isGood ? baseSpeed * 5 : baseSpeed, // Blue: 10 initial speed
+                speedY: isGood ? baseSpeed * 5 : baseSpeed
+            };
+        }
+
+        // Update speed meter based on click count
+        function updateSpeedMeter() {
+            const progress = (clickCount / MAX_CLICKS) * 100;
+            const clampedProgress = Math.max(0, Math.min(100, progress));
+            speedMeter.textContent = `Speed: ${Math.round(clampedProgress)}%`;
+        }
+
+        // Move all bubbles without momentum
+        function moveBubbles() {
+            bubbles.forEach(b => {
+                b.posX += b.speedX;
+                b.posY += b.speedY;
+                if (b.posX <= 0 || b.posX >= window.innerWidth - 50) b.speedX = -b.speedX;
+                if (b.posY <= 0 || b.posY >= window.innerHeight - 50) b.speedY = -b.speedY;
+                b.element.style.left = b.posX + 'px';
+                b.element.style.top = b.posY + 'px';
+            });
+            animationFrame = requestAnimationFrame(moveBubbles);
+        }
+
+        // Update high scores with name and score
+        function updateHighScores(name, score) {
+            console.log(`Updating high scores - Name: ${name}, Score: ${score}`);
+            highScores.push({ name: name.toUpperCase(), score: score });
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 10);
+            localStorage.setItem('highScores', JSON.stringify(highScores));
+            console.log('High scores after update:', highScores);
+        }
+
+        // Display high scores on Game Over screen
+        function displayHighScores() {
+            console.log('Displaying high scores - Current array:', highScores);
+            highScoresDisplay.innerHTML = '<h3>Top 10 Scores</h3>' + 
+                (highScores.length > 0 ? 
+                    highScores.map((entry, index) => `${index + 1}. ${entry.score} ${entry.name}`).join('<br>') : 
+                    'No high scores yet.');
+            console.log('High scores rendered to DOM');
+        }
+
+        // Check for game over
+        function checkGameOver() {
+            if (score < 0 || timer <= 0) {
+                console.log('Game Over triggered - Final Score:', score);
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                nameEntryScreen.style.display = 'block';
+                nameInput.value = '';
+                nameInput.focus();
+                bubbles.forEach(b => {
+                    if (!b.element.id) b.element.remove();
+                });
+            }
+        }
+
+        // Start the timer
+        function startTimer() {
+            timer = 60;
+            timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+            timerInterval = setInterval(() => {
+                timer -= 0.1;
+                timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+                checkGameOver();
+            }, 100);
+        }
+
+        // Add event listeners to bubbles
+        function addBubbleListeners(bubbleObj, isGood) {
+            bubbleObj.element.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (isGood) {
+                    score += 10;
+                    clickCount++;
+                    if (clickCount <= MAX_CLICKS) {
+                        bubbleObj.speedX = bubbleObj.speedX > 0 ? bubbleObj.speedX * 1.03 : bubbleObj.speedX * -1.03;
+                        bubbleObj.speedY = bubbleObj.speedY > 0 ? bubbleObj.speedY * 1.03 : bubbleObj.speedY * -1.03;
+                    }
+                    updateSpeedMeter();
+                } else {
+                    score -= 10;
+                }
+                scoreDisplay.textContent = `Score: ${score}`;
+                bubbleObj.posX = Math.random() * (window.innerWidth - 50);
+                bubbleObj.posY = Math.random() * (window.innerHeight - 50);
+                bubbleObj.element.style.left = bubbleObj.posX + 'px';
+                bubbleObj.element.style.top = bubbleObj.posY + 'px';
+                checkGameOver();
+            });
+        }
+
+        // Handle name submission
+        submitName.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            console.log('Submit clicked - Name entered:', name, 'Score at submission:', score);
+            if (name.length === 3 && /^[A-Za-z]+$/.test(name)) {
+                updateHighScores(name, score);
+                nameEntryScreen.style.display = 'none';
+                gameOverScreen.style.display = 'block';
+                const upperName = name.toUpperCase();
+                gameOverScreen.querySelector('.your-score').textContent = `Your Score: ${score} ${upperName}`;
+                const rank = highScores.findIndex(entry => entry.score === score && entry.name === upperName) + 1;
+                gameOverScreen.querySelector('.rank').textContent = rank > 0 ? `Rank: ${rank}` : 'Unranked';
+                displayHighScores();
+            } else {
+                alert('Please enter exactly 3 letters (A-Z).');
+            }
+        });
+
+        // Allow Enter key to submit name
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitName.click();
+            }
+        });
+
+        // Share score
+        shareButton.addEventListener('click', () => {
+            const shareText = `I scored ${score} points in Bubble Tap! Can you beat me?`;
+            navigator.clipboard.writeText(shareText).then(() => alert('Score copied to clipboard!'));
+        });
+
+        // Toggle background theme
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.style.backgroundColor = isDarkMode ? '#ffffff' : '#000000';
+            scoreDisplay.style.color = isDarkMode ? '#000000' : '#333';
+            timerDisplay.style.color = isDarkMode ? '#000000' : '#333';
+            speedMeter.style.color = isDarkMode ? '#000000' : '#333';
+        });
+
+        // Initialize or reset game
+        function startGame() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            score = 0;
+            clickCount = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            updateSpeedMeter();
+            nameEntryScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            bubbles.forEach(b => {
+                if (!b.element.id) b.element.remove();
+            });
+            bubbles = [];
+            const goodBubbleObj = createBubble(true);
+            bubbles.push(goodBubbleObj);
+            for (let i = 0; i < 100; i++) {
+                bubbles.push(createBubble(false));
+            }
+            bubbles.forEach((b, index) => {
+                b.element.style.left = b.posX + 'px';
+                b.element.style.top = b.posY + 'px';
+                addBubbleListeners(b, index === 0);
+            });
+            moveBubbles();
+            startTimer();
+        }
+
+        // Retry button
+        retryButton.addEventListener('click', startGame);
+
+        // Start the game initially
+        startGame();
+    </script>
+</body>
+</html>

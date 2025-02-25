@@ -36,15 +36,12 @@
             z-index: 1000;
             cursor: default !important;
         }
-        #score, #timer, #speedMeter {
+        #score, #timer, #highScoreDisplay {
             font-size: clamp(14px, 4vw, 24px);
             color: #ffffff;
             display: none;
             flex: 1;
             text-align: center;
-        }
-        #speedMeter {
-            font-size: clamp(12px, 3vw, 18px);
         }
         #gameArea {
             flex: 1;
@@ -90,12 +87,13 @@
     <div id="uiContainer">
         <div id="score">Score: 0</div>
         <div id="timer">Time: 60</div>
-        <div id="speedMeter">Speed: 0%</div>
+        <div id="highScoreDisplay">Current High Score: 0</div>
     </div>
     <div id="gameArea">
         <div id="goodBubble" class="bubble"></div>
     </div>
     <small id="credits">Created by @CptXenu using Grok AI</small>
+
     <div id="splashScreen">
         <h1>Bubble Pop</h1>
         <button id="playNowButton">Play Now</button>
@@ -120,8 +118,9 @@
     <audio id="coinSound" src="https://www.myinstants.com/media/sounds/coin.mp3"></audio>
     <audio id="buzzerSound" src="https://www.myinstants.com/media/sounds/buzzer.mp3"></audio>
     <audio id="splashSound" src="https://www.myinstants.com/media/sounds/splash.mp3"></audio>
-    <audio id="gameMusic" src="https://github.com/CaptainXenu/plsmonkey/blob/main/retromusic.mp3" loop></audio>
-    <!-- Replace the src with your own NES-style techno track, e.g., an 8-bit MP3 file -->
+    <audio id="gameMusic" src="https://raw.githubusercontent.com/username/repo/main/assets/music.mp3" loop></audio>
+    <!-- Replace with your actual GitHub raw URL -->
+
     <style>
         #nameEntryScreen, #gameOver, #countdown, #splashScreen {
             position: fixed;
@@ -243,7 +242,7 @@
                 justify-content: center;
                 width: 80%;
             }
-            #score, #timer, #speedMeter {
+            #score, #timer, #highScoreDisplay {
                 flex: none;
             }
             #gameArea {
@@ -262,7 +261,7 @@
             const goodBubble = document.getElementById('goodBubble');
             const scoreDisplay = document.getElementById('score');
             const timerDisplay = document.getElementById('timer');
-            const speedMeter = document.getElementById('speedMeter');
+            const highScoreDisplay = document.getElementById('highScoreDisplay');
             const nameEntryScreen = document.getElementById('nameEntryScreen');
             const gameOverScreen = document.getElementById('gameOver');
             const retryButton = document.getElementById('retryButton');
@@ -277,6 +276,7 @@
             const splashScreen = document.getElementById('splashScreen');
             const playNowButton = document.getElementById('playNowButton');
             const gameArea = document.getElementById('gameArea');
+            const gameMusic = document.getElementById('gameMusic');
             let score = 0;
             let bubbles = [];
             let animationFrame = null;
@@ -339,11 +339,11 @@
                 }
             }
 
-            function updateSpeedMeter() {
-                const progress = (clickCount / MAX_CLICKS) * 100;
-                const clampedProgress = Math.max(0, Math.min(100, progress));
-                speedMeter.textContent = `Speed: ${Math.round(clampedProgress)}%`;
+            function updateHighScoreDisplay() {
+                const highestScore = highScores.length > 0 ? highScores[0].score : 0;
+                highScoreDisplay.textContent = `Current High Score: ${highestScore}`;
             }
+
 
             function moveBubbles() {
                 try {
@@ -458,6 +458,7 @@
                 highScores.sort((a, b) => b.score - a.score);
                 highScores = highScores.slice(0, 10);
                 localStorage.setItem('highScores', JSON.stringify(highScores));
+                updateHighScoreDisplay(); // Update UI when high scores change
             }
 
             function displayHighScores() {
@@ -483,10 +484,10 @@
                     bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
                     scoreDisplay.style.display = 'none';
                     timerDisplay.style.display = 'none';
-                    speedMeter.style.display = 'none';
+                    highScoreDisplay.style.display = 'none';
                     bubbles.forEach(b => b.element.style.display = 'none');
-                    document.getElementById('gameMusic').pause(); // Stop music when game ends
-                    document.getElementById('gameMusic').currentTime = 0; // Reset to start
+                    gameMusic.pause();
+                    gameMusic.currentTime = 0;
                 }
             }
 
@@ -516,10 +517,9 @@
                         coinSound.currentTime = 0;
                         coinSound.play();
                         score += 10;
-                        clickCount++;
+                        // Removed clickCount increment since speed meter is gone
                         goodBubbleObj.speedX *= 1.25;
                         goodBubbleObj.speedY *= 1.25;
-                        updateSpeedMeter();
                     } else {
                         createConfetti(x, y, 'rgba(255, 0, 0, 0.8)');
                         buzzerSound.currentTime = 0;
@@ -573,7 +573,7 @@
                 score = 0;
                 clickCount = 0;
                 scoreDisplay.textContent = `Score: ${score}`;
-                updateSpeedMeter();
+                updateHighScoreDisplay(); // Initialize high score display
                 nameEntryScreen.style.display = 'none';
                 gameOverScreen.style.display = 'none';
                 splashScreen.style.display = 'none';
@@ -592,11 +592,11 @@
                 });
                 scoreDisplay.style.display = 'block';
                 timerDisplay.style.display = 'block';
-                speedMeter.style.display = 'block';
+                highScoreDisplay.style.display = 'block';
                 enforceCrosshair();
                 moveBubbles();
                 startTimer();
-                document.getElementById('gameMusic').play(); // Start music when game begins
+                gameMusic.play();
             }
 
             submitName.addEventListener('click', () => {
@@ -652,4 +652,3 @@
     </script>
 </body>
 </html>
-

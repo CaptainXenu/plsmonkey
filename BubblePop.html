@@ -2,25 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bubble Tap Game</title>
     <style>
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             background-color: #000000;
-            cursor: crosshair !important;
+        }
+        body {
             display: flex;
-            flex-direction: column;
-            height: 100vh;
-            touch-action: manipulation;
+            justify-content: center;
+            align-items: center;
+            cursor: crosshair !important;
             font-family: Arial, sans-serif;
         }
-        body * {
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+            max-width: 414px;
+            max-height: 896px;
+            aspect-ratio: 9 / 16;
+            position: relative;
+            overflow: hidden;
+            background-color: #000000;
+            touch-action: manipulation;
+        }
+        #gameContainer * {
             cursor: inherit !important;
         }
         #uiContainer {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
@@ -44,31 +59,55 @@
             text-align: center;
         }
         #gameArea {
-            flex: 1;
-            position: relative;
+            position: absolute;
             top: clamp(40px, 10vh, 60px);
-            height: calc(100vh - clamp(40px, 10vh, 60px));
+            left: 0;
+            width: 100%;
+            height: calc(100% - clamp(40px, 10vh, 60px));
             margin: clamp(10px, 2vw, 20px) clamp(10px, 2vw, 20px) clamp(20px, 6vw, 60px);
             background-color: #000000;
             overflow: hidden;
         }
         .bubble {
-            width: 2.5vw;
-            height: 2.5vw;
+            width: 21px;
+            height: 21px;
             border-radius: 50%;
             position: absolute;
             transition: none;
             display: none;
         }
         #goodBubble {
-            background-color: rgba(0, 191, 255, 0.7);
-            width: 11.25vw;
-            height: 11.25vw;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(0, 191, 255, 0.7) 70%);
+            width: 47px;
+            height: 47px;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
         .badBubble {
-            background-color: rgba(255, 0, 0, 0.7);
-            width: 5vw;
-            height: 5vw;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(255, 0, 0, 0.7) 70%);
+            width: 21px;
+            height: 21px;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.5), inset 0 0 3px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .goldenBubble {
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 215, 0, 0.9) 70%);
+            width: 21px;
+            height: 21px;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.7), inset 0 0 3px rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .glitter {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: glitterFade 0.5s ease-out forwards;
+        }
+        @keyframes glitterFade {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
         }
         .confetti {
             width: clamp(5px, 2vw, 8px);
@@ -84,15 +123,17 @@
     </style>
 </head>
 <body>
-    <div id="uiContainer">
-        <div id="score">Score: 0</div>
-        <div id="timer">Time: 60</div>
-        <div id="highScoreDisplay">Current High Score: 0</div>
+    <div id="gameContainer">
+        <div id="uiContainer">
+            <div id="score">0</div>
+            <div id="timer">60</div>
+            <div id="highScoreDisplay">Highscore: 0</div>
+        </div>
+        <div id="gameArea">
+            <div id="goodBubble" class="bubble"></div>
+        </div>
+        <small id="credits">Created by @CptXenu using Grok AI</small>
     </div>
-    <div id="gameArea">
-        <div id="goodBubble" class="bubble"></div>
-    </div>
-    <small id="credits">Created by @CptXenu using Grok AI</small>
 
     <div id="splashScreen">
         <h1>Bubble Pop</h1>
@@ -115,15 +156,17 @@
         <button id="shareButton">Share Score</button>
     </div>
     <div id="countdown">3</div>
-    <audio id="coinSound" src="https://www.myinstants.com/media/sounds/coin.mp3"></audio>
+    <audio id="coinSound" src="https://p.productioncrate.com/stock-hd/audio/soundscrate-balloon-pop-03.mp3"></audio>
     <audio id="buzzerSound" src="https://www.myinstants.com/media/sounds/buzzer.mp3"></audio>
     <audio id="splashSound" src="https://www.myinstants.com/media/sounds/splash.mp3"></audio>
+    <audio id="coinShowerSound" src="https://www.myinstants.com/media/sounds/coin-shower.mp3"></audio>
+    <audio id="confettiPopSound" src="https://www.myinstants.com/media/sounds/coin.mp3"></audio>
     <audio id="gameMusic" src="https://raw.githubusercontent.com/username/repo/main/assets/music.mp3" loop></audio>
-    <!-- Replace with your actual GitHub raw URL -->
+    <!-- Replace with your actual GitHub raw URL for gameMusic -->
 
     <style>
         #nameEntryScreen, #gameOver, #countdown, #splashScreen {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -155,8 +198,13 @@
         }
         #countdown {
             font-size: clamp(50px, 20vw, 100px);
-            line-height: 100vh;
             display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            text-align: center;
         }
         #countdown.go {
             color: #00FF00;
@@ -230,7 +278,7 @@
             margin-top: clamp(10px, 5vh, 20px);
         }
         #credits {
-            position: fixed;
+            position: absolute;
             bottom: clamp(5px, 1vh, 10px);
             right: clamp(5px, 1vw, 10px);
             z-index: 500;
@@ -247,7 +295,7 @@
             }
             #gameArea {
                 top: clamp(60px, 15vh, 90px);
-                height: calc(100vh - clamp(60px, 15vh, 90px));
+                height: calc(100% - clamp(60px, 15vh, 90px));
             }
             #gameOver button {
                 width: 100%;
@@ -256,95 +304,131 @@
         }
     </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const goodBubble = document.getElementById('goodBubble');
-        const scoreDisplay = document.getElementById('score');
-        const timerDisplay = document.getElementById('timer');
-        const highScoreDisplay = document.getElementById('highScoreDisplay');
-        const nameEntryScreen = document.getElementById('nameEntryScreen');
-        const gameOverScreen = document.getElementById('gameOver');
-        const retryButton = document.getElementById('retryButton');
-        const shareButton = document.getElementById('shareButton');
-        const highScoresDisplay = document.getElementById('highScores');
-        const nameInput = document.getElementById('nameInput');
-        const submitName = document.getElementById('submitName');
-        const coinSound = document.getElementById('coinSound');
-        const buzzerSound = document.getElementById('buzzerSound');
-        const splashSound = document.getElementById('splashSound');
-        const countdown = document.getElementById('countdown');
-        const splashScreen = document.getElementById('splashScreen');
-        const playNowButton = document.getElementById('playNowButton');
-        const gameArea = document.getElementById('gameArea');
-        const gameMusic = document.getElementById('gameMusic');
-        let score = 0;
-        let bubbles = [];
-        let animationFrame = null;
-        let timer = 60;
-        let timerInterval = null;
-        let clickCount = 0;
-        const MAX_CLICKS = 77;
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const goodBubble = document.getElementById('goodBubble');
+            const scoreDisplay = document.getElementById('score');
+            const timerDisplay = document.getElementById('timer');
+            const highScoreDisplay = document.getElementById('highScoreDisplay');
+            const nameEntryScreen = document.getElementById('nameEntryScreen');
+            const gameOverScreen = document.getElementById('gameOver');
+            const retryButton = document.getElementById('retryButton');
+            const shareButton = document.getElementById('shareButton');
+            const highScoresDisplay = document.getElementById('highScores');
+            const nameInput = document.getElementById('nameInput');
+            const submitName = document.getElementById('submitName');
+            const coinSound = document.getElementById('coinSound');
+            const buzzerSound = document.getElementById('buzzerSound');
+            const splashSound = document.getElementById('splashSound');
+            const coinShowerSound = document.getElementById('coinShowerSound');
+            const confettiPopSound = document.getElementById('confettiPopSound');
+            const countdown = document.getElementById('countdown');
+            const splashScreen = document.getElementById('splashScreen');
+            const playNowButton = document.getElementById('playNowButton');
+            const gameArea = document.getElementById('gameArea');
+            const gameMusic = document.getElementById('gameMusic');
+            let score = 0;
+            let bubbles = [];
+            let goldenBubble = null;
+            let animationFrame = null;
+            let timer = 60;
+            let timerInterval = null;
+            let clickCount = 0;
+            const MAX_CLICKS = 77;
 
-        let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+            let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
 
-        function getBubbleSize(bubbleElement) {
-            return parseFloat(getComputedStyle(bubbleElement).width);
-        }
-
-        function enforceCrosshair() {
-            if (nameEntryScreen.style.display === 'none' && gameOverScreen.style.display === 'none' && countdown.style.display === 'none' && splashScreen.style.display === 'none') {
-                document.body.style.cursor = 'crosshair';
+            function getBubbleSize(bubbleElement) {
+                return parseFloat(getComputedStyle(bubbleElement).width);
             }
-        }
 
-        function createBubble(isGood = false) {
-            const bubble = isGood ? goodBubble : document.createElement('div');
-            if (!isGood) {
-                bubble.className = 'badBubble bubble';
-                gameArea.appendChild(bubble);
+            function enforceCrosshair() {
+                if (nameEntryScreen.style.display === 'none' && gameOverScreen.style.display === 'none' && countdown.style.display === 'none' && splashScreen.style.display === 'none') {
+                    document.body.style.cursor = 'crosshair';
+                }
             }
-            const bubbleSize = getBubbleSize(bubble);
-            const bufferSides = bubbleSize * 0.5;
-            const bufferBottom = bubbleSize * 1.5;
 
-            const baseSpeed = isGood ? 1.0 : 3.0; // Blue starts at 1.0 (10x faster than 0.1), Red at 3.0
-            const speedX = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
-            const speedY = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
+            function createBubble(isGood = false, isGolden = false) {
+                const bubble = isGood ? goodBubble : document.createElement('div');
+                if (!isGood && !isGolden) {
+                    bubble.className = 'badBubble bubble';
+                    gameArea.appendChild(bubble);
+                } else if (isGolden) {
+                    bubble.className = 'goldenBubble bubble';
+                    gameArea.appendChild(bubble);
+                }
+                const bubbleSize = getBubbleSize(bubble);
+                const bufferSides = bubbleSize * 0.5;
+                const bufferBottom = bubbleSize * 1.5;
 
-            return {
-                element: bubble,
-                posX: bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize),
-                posY: bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize),
-                speedX: speedX,
-                speedY: speedY
-            };
-        }
+                const baseSpeed = isGood ? 1.5 : (isGolden ? 9.4 : 3.0);
+                const speedX = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
+                const speedY = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
 
-        function createConfetti(x, y, color) {
-            const confettiCount = 8;
-            for (let i = 0; i < confettiCount; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.backgroundColor = color;
-                confetti.style.left = x + 'px';
-                confetti.style.top = y + 'px';
-                const angle = Math.random() * 2 * Math.PI;
-                const distance = Math.random() * 30 + 20;
-                const dx = Math.cos(angle) * distance;
-                const dy = Math.sin(angle) * distance;
-                confetti.style.setProperty('--dx', `${dx}px`);
-                confetti.style.setProperty('--dy', `${dy}px`);
-                gameArea.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 500);
+                return {
+                    element: bubble,
+                    posX: bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize),
+                    posY: bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize),
+                    speedX: speedX,
+                    speedY: speedY,
+                    isGolden: isGolden
+                };
             }
-        }
 
-        function updateHighScoreDisplay() {
-            const highestScore = highScores.length > 0 ? highScores[0].score : 0;
-            highScoreDisplay.textContent = `Current High Score: ${highestScore}`;
-        }
+            function createConfetti(x, y, color) {
+                const confettiCount = 8;
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = color;
+                    confetti.style.left = x + 'px';
+                    confetti.style.top = y + 'px';
+                    const angle = Math.random() * 2 * Math.PI;
+                    const distance = Math.random() * 30 + 20;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance;
+                    confetti.style.setProperty('--dx', `${dx}px`);
+                    confetti.style.setProperty('--dy', `${dy}px`);
+                    gameArea.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 500);
+                }
+            }
 
-        function moveBubbles() {
+            function createGlitter(x, y) {
+                const colors = ['rgba(255, 255, 255, 0.8)', 'rgba(255, 215, 0, 0.8)'];
+                const glitterCount = 2;
+                for (let i = 0; i < glitterCount; i++) {
+                    const glitter = document.createElement('div');
+                    glitter.className = 'glitter';
+                    glitter.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    glitter.style.left = (x + Math.random() * 5 - 2.5) + 'px';
+                    glitter.style.top = (y + Math.random() * 5 - 2.5) + 'px';
+                    gameArea.appendChild(glitter);
+                    setTimeout(() => glitter.remove(), 500);
+                }
+            }
+
+            function updateHighScoreDisplay() {
+                const highestScore = highScores.length > 0 ? highScores[0].score : 0;
+                highScoreDisplay.textContent = `Highscore: ${highestScore}`;
+            }
+
+            function spawnGoldenBubble() {
+                if (!goldenBubble && timer > 0) {
+                    goldenBubble = createBubble(false, true);
+                    goldenBubble.element.style.display = 'block';
+                    addGoldenBubbleListener(goldenBubble);
+                    setTimeout(() => {
+                        if (goldenBubble) {
+                            goldenBubble.element.remove();
+                            goldenBubble = null;
+                        }
+                    }, 4000);
+                }
+                setTimeout(spawnGoldenBubble, 10000);
+            }
+
+            function moveBubbles() {
                 try {
                     bubbles.forEach(b => {
                         const bubbleSize = getBubbleSize(b.element);
@@ -374,6 +458,29 @@
                         b.element.style.left = b.posX + 'px';
                         b.element.style.top = b.posY + 'px';
                     });
+
+                    if (goldenBubble) {
+                        const bubbleSize = getBubbleSize(goldenBubble.element);
+
+                        goldenBubble.posX += goldenBubble.speedX;
+                        goldenBubble.posY += goldenBubble.speedY;
+
+                        createGlitter(goldenBubble.posX + bubbleSize / 2, goldenBubble.posY + bubbleSize / 2);
+
+                        if (goldenBubble.posX + bubbleSize < 0) {
+                            goldenBubble.posX = gameArea.offsetWidth;
+                        } else if (goldenBubble.posX > gameArea.offsetWidth) {
+                            goldenBubble.posX = -bubbleSize;
+                        }
+                        if (goldenBubble.posY + bubbleSize < 0) {
+                            goldenBubble.posY = gameArea.offsetHeight;
+                        } else if (goldenBubble.posY > gameArea.offsetHeight) {
+                            goldenBubble.posY = -bubbleSize;
+                        }
+
+                        goldenBubble.element.style.left = goldenBubble.posX + 'px';
+                        goldenBubble.element.style.top = goldenBubble.posY + 'px';
+                    }
 
                     const goodBubble = bubbles.find(b => b.element.id === 'goodBubble');
 
@@ -481,6 +588,10 @@
                     nameInput.value = '';
                     nameInput.focus();
                     bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
+                    if (goldenBubble) {
+                        goldenBubble.element.remove();
+                        goldenBubble = null;
+                    }
                     scoreDisplay.style.display = 'none';
                     timerDisplay.style.display = 'none';
                     highScoreDisplay.style.display = 'none';
@@ -492,16 +603,17 @@
 
             function startTimer() {
                 timer = 60;
-                timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+                timerDisplay.textContent = `${Math.ceil(timer)}`;
                 timerInterval = setInterval(() => {
                     timer -= 0.1;
-                    timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+                    timerDisplay.textContent = `${Math.ceil(timer)}`;
                     checkGameOver();
                 }, 100);
             }
 
             function addBubbleListeners(bubbleObj, isGood) {
-                bubbleObj.element.addEventListener('pointerdown', (e) => {
+                // Define the click handler separately to allow removal
+                const handleClick = (e) => {
                     e.preventDefault();
                     bubbleObj.element.style.display = 'none';
 
@@ -515,34 +627,82 @@
                         createConfetti(x, y, 'rgba(0, 255, 0, 0.8)');
                         coinSound.currentTime = 0;
                         coinSound.play();
-                        score += 10;
-                        goodBubbleObj.speedX *= 1.01; // Changed from 1.5 to 1.01 (1% increase)
-                        goodBubbleObj.speedY *= 1.01; // Changed from 1.5 to 1.01 (1% increase)
+                        score += 10; // Blue bubble: +10 points
+                        goodBubbleObj.speedX *= 1.01;
+                        goodBubbleObj.speedY *= 1.01;
                     } else {
                         createConfetti(x, y, 'rgba(255, 0, 0, 0.8)');
                         buzzerSound.currentTime = 0;
                         buzzerSound.play();
-                        score -= 10;
-                        goodBubbleObj.speedX /= 1.5; // Kept decrease at 1.5 for balance
-                        goodBubbleObj.speedY /= 1.5; // Kept decrease at 1.5 for balance
+                        score -= 10; // Red bubble: -10 points
+                        goodBubbleObj.speedX /= 1.5;
+                        goodBubbleObj.speedY /= 1.5;
                     }
-                    scoreDisplay.textContent = `Score: ${score}`;
+                    scoreDisplay.textContent = `${score}`;
 
-                    setTimeout(() => {
-                        const bufferSides = bubbleSize * 0.5;
-                        const bufferBottom = bubbleSize * 1.5;
-                        bubbleObj.posX = bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize);
-                        bubbleObj.posY = bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize);
+                    const bufferSides = bubbleSize * 0.5;
+                    const bufferBottom = bubbleSize * 1.5;
+                    bubbleObj.posX = bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize);
+                    bubbleObj.posY = bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize);
 
-                        bubbleObj.element.style.left = bubbleObj.posX + 'px';
-                        bubbleObj.element.style.top = bubbleObj.posY + 'px';
-                        bubbleObj.element.style.display = 'block';
+                    bubbleObj.element.style.left = bubbleObj.posX + 'px';
+                    bubbleObj.element.style.top = bubbleObj.posY + 'px';
+                    bubbleObj.element.style.display = 'block';
 
-                        bubbleObj.element.offsetHeight; // Trigger reflow
-                    }, 100);
+                    bubbleObj.element.offsetHeight;
 
                     checkGameOver();
-                });
+                };
+
+                // Remove any existing pointerdown listeners to prevent stacking
+                bubbleObj.element.removeEventListener('pointerdown', bubbleObj.clickHandler);
+                // Assign the new handler and store it for later removal
+                bubbleObj.clickHandler = handleClick;
+                bubbleObj.element.addEventListener('pointerdown', bubbleObj.clickHandler);
+            }
+
+            function addGoldenBubbleListener(bubbleObj) {
+                // Define the click handler separately to allow removal
+                const handleGoldenClick = (e) => {
+                    e.preventDefault();
+                    bubbleObj.element.style.display = 'none';
+                    const bubbleSize = getBubbleSize(bubbleObj.element);
+                    const x = bubbleObj.posX + bubbleSize / 2;
+                    const y = bubbleObj.posY + bubbleSize / 2;
+
+                    const explosionCount = 10;
+                    for (let i = 0; i < explosionCount; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.backgroundColor = 'rgba(255, 215, 0, 0.9)';
+                        confetti.style.left = x + 'px';
+                        confetti.style.top = y + 'px';
+                        const angle = Math.random() * 2 * Math.PI;
+                        const distance = Math.random() * 30 + 20;
+                        const dx = Math.cos(angle) * distance;
+                        const dy = Math.sin(angle) * distance;
+                        confetti.style.setProperty('--dx', `${dx}px`);
+                        confetti.style.setProperty('--dy', `${dy}px`);
+                        gameArea.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 500);
+                    }
+
+                    confettiPopSound.currentTime = 0;
+                    confettiPopSound.play();
+                    score += 50; // Golden bubble: +50 points
+                    scoreDisplay.textContent = `${score}`;
+
+                    bubbleObj.element.remove();
+                    goldenBubble = null;
+
+                    checkGameOver();
+                };
+
+                // Remove any existing pointerdown listeners to prevent stacking
+                bubbleObj.element.removeEventListener('pointerdown', bubbleObj.goldenClickHandler);
+                // Assign the new handler and store it for later removal
+                bubbleObj.goldenClickHandler = handleGoldenClick;
+                bubbleObj.element.addEventListener('pointerdown', bubbleObj.goldenClickHandler);
             }
 
             function startCountdown(callback) {
@@ -572,12 +732,25 @@
                 if (timerInterval) clearInterval(timerInterval);
                 score = 0;
                 clickCount = 0;
-                scoreDisplay.textContent = `Score: ${score}`;
+                scoreDisplay.textContent = `${score}`;
                 updateHighScoreDisplay();
                 nameEntryScreen.style.display = 'none';
                 gameOverScreen.style.display = 'none';
                 splashScreen.style.display = 'none';
-                bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
+                // Remove existing bubbles and their listeners
+                bubbles.forEach(b => {
+                    if (b.element.id !== 'goodBubble') {
+                        b.element.remove();
+                    } else {
+                        // For goodBubble, reset its position and listener
+                        b.element.removeEventListener('pointerdown', b.clickHandler);
+                    }
+                });
+                if (goldenBubble) {
+                    goldenBubble.element.removeEventListener('pointerdown', goldenBubble.goldenClickHandler);
+                    goldenBubble.element.remove();
+                    goldenBubble = null;
+                }
                 bubbles = [];
                 const goodBubbleObj = createBubble(true);
                 bubbles.push(goodBubbleObj);
@@ -588,7 +761,7 @@
                     b.element.style.left = b.posX + 'px';
                     b.element.style.top = b.posY + 'px';
                     b.element.style.display = 'block';
-                    addBubbleListeners(b, b.element === goodBubble);
+                    addBubbleListeners(b, b.element === goodBubble); // Reapply listeners cleanly
                 });
                 scoreDisplay.style.display = 'block';
                 timerDisplay.style.display = 'block';
@@ -597,6 +770,7 @@
                 moveBubbles();
                 startTimer();
                 gameMusic.play();
+                setTimeout(spawnGoldenBubble, 10000);
             }
 
             submitName.addEventListener('click', () => {

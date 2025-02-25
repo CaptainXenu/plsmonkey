@@ -13,6 +13,8 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            touch-action: manipulation;
+            font-family: Arial, sans-serif;
         }
         body * {
             cursor: inherit !important;
@@ -20,245 +22,67 @@
         #uiContainer {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px; /* Fixed height for UI */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            height: clamp(40px, 10vh, 60px);
             background-color: rgba(0, 0, 0, 0.8);
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            padding: 0 10px;
+            padding: 0 clamp(5px, 1vw, 10px);
             z-index: 1000;
             cursor: default !important;
         }
         #score, #timer, #speedMeter {
-            font-family: Arial, sans-serif;
-            font-size: 24px;
+            font-size: clamp(14px, 4vw, 24px);
             color: #ffffff;
-            display: none; /* Hidden until game starts */
+            display: none;
+            flex: 1;
+            text-align: center;
         }
         #speedMeter {
-            font-size: 18px;
-        }
-        #timer {
-            position: static; /* Remove absolute positioning */
-            transform: none; /* Remove centering transform */
+            font-size: clamp(12px, 3vw, 18px);
         }
         #gameArea {
-            flex: 1; /* Take remaining height */
+            flex: 1;
             position: relative;
-            top: 60px; /* Offset by UI height */
-            height: calc(100vh - 60px); /* Adjust height to exclude UI */
-            margin: 20px 20px 60px 20px; /* Larger bottom buffer (60px), others 20px */
-            background-color: #000000; /* Match dark mode */
+            top: clamp(40px, 10vh, 60px);
+            height: calc(100vh - clamp(40px, 10vh, 60px));
+            margin: clamp(10px, 2vw, 20px) clamp(10px, 2vw, 20px) clamp(20px, 6vw, 60px);
+            background-color: #000000;
             overflow: hidden;
         }
         .bubble {
-            width: 50px;
-            height: 50px;
+            width: 2.5vw;
+            height: 2.5vw;
             border-radius: 50%;
             position: absolute;
             transition: none;
-            display: none; /* Hidden until game starts */
+            display: none;
         }
         #goodBubble {
             background-color: rgba(0, 191, 255, 0.7);
+            width: 7.5vw;
+            height: 7.5vw;
         }
         .badBubble {
             background-color: rgba(255, 0, 0, 0.7);
+            width: 5vw;
+            height: 5vw;
         }
         .confetti {
-            width: 8px;
-            height: 8px;
+            width: clamp(5px, 2vw, 8px);
+            height: clamp(5px, 2vw, 8px);
             border-radius: 50%;
             position: absolute;
             animation: confettiBurst 0.5s ease-out forwards;
         }
         @keyframes confettiBurst {
-            0% {
-                transform: scale(1);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translate(var(--dx), var(--dy)) scale(0.5);
-                opacity: 0;
-            }
-        }
-        #nameEntryScreen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 15%;
-            z-index: 1000;
-            cursor: default !important;
-        }
-        #nameEntryScreen h1 {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-        #nameEntryScreen input {
-            width: 80px;
-            padding: 8px;
-            font-size: 18px;
-            text-transform: uppercase;
-            margin-right: 15px;
-            border-radius: 5px;
-            border: none;
-            cursor: text !important;
-        }
-        #nameEntryScreen button {
-            padding: 8px 20px;
-            font-size: 18px;
-            cursor: pointer !important;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        #nameEntryScreen button:hover {
-            background-color: #45a049;
-        }
-        #gameOver {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 10%;
-            z-index: 1000;
-            cursor: default !important;
-        }
-        #gameOver h1 {
-            font-size: 48px;
-            margin-bottom: 10px;
-            animation: popIn 0.5s ease-out;
-        }
-        #gameOver .your-score {
-            font-size: 28px;
-            margin: 20px 0;
-            color: #4CAF50;
-        }
-        #gameOver .rank {
-            font-size: 22px;
-            margin-bottom: 30px;
-            color: #FFD700;
-        }
-        #gameOver #highScores {
-            margin: 20px 0;
-            font-size: 18px;
-            line-height: 1.5;
-        }
-        #gameOver #highScores h3 {
-            margin-bottom: 10px;
-        }
-        #gameOver button {
-            padding: 10px 25px;
-            font-size: 18px;
-            cursor: pointer !important;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            transition: transform 0.2s;
-        }
-        #gameOver button:hover {
-            transform: scale(1.05);
-        }
-        #retryButton {
-            background-color: #4CAF50;
-            color: white;
-        }
-        #shareButton {
-            background-color: #1E90FF;
-            color: white;
-        }
-        #countdown {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000000;
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 100px;
-            text-align: center;
-            line-height: 100vh;
-            z-index: 1500;
-        }
-        #countdown.go {
-            color: #00FF00;
-        }
-        #splashScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000000;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            cursor: default !important;
-        }
-        #splashScreen h1 {
-            font-size: 72px;
-            margin: 0;
-            color: #00BFFF;
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
-            animation: popIn 1s ease-out;
-        }
-        #splashScreen button {
-            padding: 15px 30px;
-            font-size: 24px;
-            cursor: pointer !important;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            margin-top: 20px;
-            transition: transform 0.2s, background-color 0.3s;
-        }
-        #splashScreen button:hover {
-            transform: scale(1.1);
-            background-color: #45a049;
-        }
-        #splashScreen small {
-            font-size: 14px;
-            color: #cccccc;
-            margin-top: 20px;
-        }
-        #credits {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #cccccc;
-            z-index: 500; /* Below UI and overlays but above game area */
-            cursor: default !important;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; }
         }
     </style>
 </head>
@@ -277,14 +101,14 @@
         <button id="playNowButton">Play Now</button>
         <small>Created by CptXenu using Grok AI</small>
     </div>
-    <div id="nameEntryScreen">
+    <div id="nameEntryScreen" style="display: none;">
         <h1>Enter Your Initials</h1>
         <div>
             <input type="text" id="nameInput" maxlength="3" placeholder="ABC">
             <button id="submitName">Submit</button>
         </div>
     </div>
-    <div id="gameOver">
+    <div id="gameOver" style="display: none;">
         <h1>Game Over</h1>
         <div class="your-score"></div>
         <div class="rank"></div>
@@ -296,135 +120,307 @@
     <audio id="coinSound" src="https://www.myinstants.com/media/sounds/coin.mp3"></audio>
     <audio id="buzzerSound" src="https://www.myinstants.com/media/sounds/buzzer.mp3"></audio>
     <audio id="splashSound" src="https://www.myinstants.com/media/sounds/splash.mp3"></audio>
+    <audio id="gameMusic" src="RetroMusic.mp3" loop></audio>
+    <!-- Replace the src with your own NES-style techno track, e.g., an 8-bit MP3 file -->
+    <style>
+        #nameEntryScreen, #gameOver, #countdown, #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            cursor: default !important;
+        }
+        #nameEntryScreen {
+            padding-top: clamp(50px, 20vh, 150px);
+        }
+        #gameOver {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5vh 5vw;
+            box-sizing: border-box;
+            gap: clamp(10px, 3vh, 20px);
+        }
+        #splashScreen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #countdown {
+            font-size: clamp(50px, 20vw, 100px);
+            line-height: 100vh;
+            display: none;
+        }
+        #countdown.go {
+            color: #00FF00;
+        }
+        #nameEntryScreen h1, #gameOver h1, #splashScreen h1 {
+            font-size: clamp(24px, 8vw, 48px);
+            margin-bottom: clamp(10px, 5vh, 20px);
+        }
+        #nameEntryScreen input {
+            width: clamp(60px, 20vw, 80px);
+            padding: clamp(5px, 2vw, 8px);
+            font-size: clamp(14px, 4vw, 18px);
+            border-radius: 5px;
+            border: none;
+            cursor: text !important;
+            margin-right: clamp(10px, 3vw, 15px);
+        }
+        #nameEntryScreen button, #gameOver button, #splashScreen button {
+            padding: clamp(8px, 2vw, 15px) clamp(20px, 5vw, 30px);
+            font-size: clamp(14px, 4vw, 18px);
+            cursor: pointer !important;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.2s, background-color 0.3s;
+            position: relative;
+            z-index: 2001;
+        }
+        #nameEntryScreen button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #gameOver button#retryButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #gameOver button#shareButton {
+            background-color: #1E90FF;
+            color: white;
+        }
+        #splashScreen button {
+            background-color: #4CAF50;
+            color: white;
+            margin-top: clamp(10px, 5vh, 20px);
+        }
+        #nameEntryScreen button:hover, #gameOver button:hover, #splashScreen button:hover {
+            transform: scale(1.05);
+            background-color: #45a049;
+        }
+        #gameOver .your-score {
+            font-size: clamp(20px, 6vw, 28px);
+            color: #4CAF50;
+        }
+        #gameOver .rank {
+            font-size: clamp(16px, 5vw, 22px);
+            color: #FFD700;
+        }
+        #gameOver #highScores {
+            font-size: clamp(14px, 4vw, 18px);
+            line-height: 1.5;
+            max-height: 30vh;
+            overflow-y: auto;
+            padding: clamp(5px, 2vw, 10px);
+            width: 80%;
+            box-sizing: border-box;
+        }
+        #splashScreen small, #credits {
+            font-size: clamp(10px, 3vw, 14px);
+            color: #cccccc;
+        }
+        #splashScreen small {
+            margin-top: clamp(10px, 5vh, 20px);
+        }
+        #credits {
+            position: fixed;
+            bottom: clamp(5px, 1vh, 10px);
+            right: clamp(5px, 1vw, 10px);
+            z-index: 500;
+        }
+        @media (max-width: 400px) {
+            #uiContainer {
+                flex-direction: column;
+                height: clamp(60px, 15vh, 90px);
+                justify-content: center;
+                width: 80%;
+            }
+            #score, #timer, #speedMeter {
+                flex: none;
+            }
+            #gameArea {
+                top: clamp(60px, 15vh, 90px);
+                height: calc(100vh - clamp(60px, 15vh, 90px));
+            }
+            #gameOver button {
+                width: 100%;
+                margin: clamp(5px, 1vh, 10px) 0;
+            }
+        }
+    </style>
 
-               <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    const goodBubble = document.getElementById('goodBubble');
-                    const scoreDisplay = document.getElementById('score');
-                    const timerDisplay = document.getElementById('timer');
-                    const speedMeter = document.getElementById('speedMeter');
-                    const nameEntryScreen = document.getElementById('nameEntryScreen');
-                    const gameOverScreen = document.getElementById('gameOver');
-                    const retryButton = document.getElementById('retryButton');
-                    const shareButton = document.getElementById('shareButton');
-                    const highScoresDisplay = document.getElementById('highScores');
-                    const nameInput = document.getElementById('nameInput');
-                    const submitName = document.getElementById('submitName');
-                    const coinSound = document.getElementById('coinSound');
-                    const buzzerSound = document.getElementById('buzzerSound');
-                    const splashSound = document.getElementById('splashSound');
-                    const countdown = document.getElementById('countdown');
-                    const splashScreen = document.getElementById('splashScreen');
-                    const playNowButton = document.getElementById('playNowButton');
-                    const gameArea = document.getElementById('gameArea');
-                    let score = 0;
-                    let bubbles = [];
-                    let animationFrame = null;
-                    let timer = 60;
-                    let timerInterval = null;
-                    let clickCount = 0;
-                    const MAX_CLICKS = 77;
-                    const UI_HEIGHT = 60; // Height of the UI container
-                    const BUFFER_SIDES = 20; // Buffer for left, right, top
-                    const BUFFER_BOTTOM = 60; // Larger buffer for bottom
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const goodBubble = document.getElementById('goodBubble');
+            const scoreDisplay = document.getElementById('score');
+            const timerDisplay = document.getElementById('timer');
+            const speedMeter = document.getElementById('speedMeter');
+            const nameEntryScreen = document.getElementById('nameEntryScreen');
+            const gameOverScreen = document.getElementById('gameOver');
+            const retryButton = document.getElementById('retryButton');
+            const shareButton = document.getElementById('shareButton');
+            const highScoresDisplay = document.getElementById('highScores');
+            const nameInput = document.getElementById('nameInput');
+            const submitName = document.getElementById('submitName');
+            const coinSound = document.getElementById('coinSound');
+            const buzzerSound = document.getElementById('buzzerSound');
+            const splashSound = document.getElementById('splashSound');
+            const countdown = document.getElementById('countdown');
+            const splashScreen = document.getElementById('splashScreen');
+            const playNowButton = document.getElementById('playNowButton');
+            const gameArea = document.getElementById('gameArea');
+            let score = 0;
+            let bubbles = [];
+            let animationFrame = null;
+            let timer = 60;
+            let timerInterval = null;
+            let clickCount = 0;
+            const MAX_CLICKS = 77;
 
-                    let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-                    console.log('Initial highScores loaded:', highScores);
+            let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
 
-                    document.body.style.backgroundColor = '#000000';
+            function getBubbleSize(bubbleElement) {
+                return parseFloat(getComputedStyle(bubbleElement).width);
+            }
 
-                    function enforceCrosshair() {
-                        if (nameEntryScreen.style.display === 'none' && gameOverScreen.style.display === 'none' && countdown.style.display === 'none' && splashScreen.style.display === 'none') {
-                            document.body.style.cursor = 'crosshair';
-                            console.log('Crosshair enforced');
+            function enforceCrosshair() {
+                if (nameEntryScreen.style.display === 'none' && gameOverScreen.style.display === 'none' && countdown.style.display === 'none' && splashScreen.style.display === 'none') {
+                    document.body.style.cursor = 'crosshair';
+                }
+            }
+
+            function createBubble(isGood = false) {
+                const bubble = isGood ? goodBubble : document.createElement('div');
+                if (!isGood) {
+                    bubble.className = 'badBubble bubble';
+                    gameArea.appendChild(bubble);
+                }
+                const bubbleSize = getBubbleSize(bubble);
+                const bufferSides = bubbleSize * 0.5;
+                const bufferBottom = bubbleSize * 1.5;
+
+                const baseSpeed = isGood ? 0.1 : 3.0;
+                const speedX = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
+                const speedY = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
+
+                return {
+                    element: bubble,
+                    posX: bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize),
+                    posY: bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize),
+                    speedX: speedX,
+                    speedY: speedY
+                };
+            }
+
+            function createConfetti(x, y, color) {
+                const confettiCount = 8;
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = color;
+                    confetti.style.left = x + 'px';
+                    confetti.style.top = y + 'px';
+                    const angle = Math.random() * 2 * Math.PI;
+                    const distance = Math.random() * 30 + 20;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance;
+                    confetti.style.setProperty('--dx', `${dx}px`);
+                    confetti.style.setProperty('--dy', `${dy}px`);
+                    gameArea.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 500);
+                }
+            }
+
+            function updateSpeedMeter() {
+                const progress = (clickCount / MAX_CLICKS) * 100;
+                const clampedProgress = Math.max(0, Math.min(100, progress));
+                speedMeter.textContent = `Speed: ${Math.round(clampedProgress)}%`;
+            }
+
+            function moveBubbles() {
+                try {
+                    bubbles.forEach(b => {
+                        const bubbleSize = getBubbleSize(b.element);
+                        const bufferSides = bubbleSize * 0.5;
+                        const bufferBottom = bubbleSize * 1.5;
+
+                        b.posX += b.speedX;
+                        b.posY += b.speedY;
+
+                        if (b.posX <= bufferSides) {
+                            b.posX = bufferSides;
+                            b.speedX = -b.speedX;
                         }
-                    }
-
-                    function createBubble(isGood = false) {
-                        const bubble = isGood ? goodBubble : document.createElement('div');
-                        if (!isGood) {
-                            bubble.className = 'badBubble bubble';
-                            gameArea.appendChild(bubble);
+                        if (b.posX >= gameArea.offsetWidth - bubbleSize - bufferSides) {
+                            b.posX = gameArea.offsetWidth - bubbleSize - bufferSides;
+                            b.speedX = -b.speedX;
                         }
-                        const baseSpeed = isGood ? 2 : (Math.random() - 0.5) * 4;
-                        return {
-                            element: bubble,
-                            posX: BUFFER_SIDES + Math.random() * (gameArea.offsetWidth - 2 * BUFFER_SIDES - 50),
-                            posY: BUFFER_SIDES + Math.random() * (gameArea.offsetHeight - BUFFER_SIDES - BUFFER_BOTTOM - 50),
-                            speedX: isGood ? baseSpeed * 5 : baseSpeed,
-                            speedY: isGood ? baseSpeed * 5 : baseSpeed
-                        };
-                    }
-
-                    function createConfetti(x, y, color) {
-                        const confettiCount = 8;
-                        for (let i = 0; i < confettiCount; i++) {
-                            const confetti = document.createElement('div');
-                            confetti.className = 'confetti';
-                            confetti.style.backgroundColor = color;
-                            confetti.style.left = x + 'px';
-                            confetti.style.top = y + 'px';
-                            const angle = Math.random() * 2 * Math.PI;
-                            const distance = Math.random() * 30 + 20;
-                            const dx = Math.cos(angle) * distance;
-                            const dy = Math.sin(angle) * distance;
-                            confetti.style.setProperty('--dx', `${dx}px`);
-                            confetti.style.setProperty('--dy', `${dy}px`);
-                            gameArea.appendChild(confetti);
-                            setTimeout(() => confetti.remove(), 500);
+                        if (b.posY <= bufferSides) {
+                            b.posY = bufferSides;
+                            b.speedY = -b.speedY;
                         }
-                    }
+                        if (b.posY >= gameArea.offsetHeight - bubbleSize - bufferBottom) {
+                            b.posY = gameArea.offsetHeight - bubbleSize - bufferBottom;
+                            b.speedY = -b.speedY;
+                        }
 
-                    function updateSpeedMeter() {
-                        const progress = (clickCount / MAX_CLICKS) * 100;
-                        const clampedProgress = Math.max(0, Math.min(100, progress));
-                        speedMeter.textContent = `Speed: ${Math.round(clampedProgress)}%`;
-                    }
+                        b.element.style.left = b.posX + 'px';
+                        b.element.style.top = b.posY + 'px';
+                    });
 
-                    function moveBubbles() {
-                        bubbles.forEach(b => {
-                            b.posX += b.speedX;
-                            b.posY += b.speedY;
+                    const goodBubble = bubbles.find(b => b.element.id === 'goodBubble');
 
-                            // Boundary collision within gameArea with buffer
-                            if (b.posX <= BUFFER_SIDES) {
-                                b.posX = BUFFER_SIDES; // Clamp to left buffer
-                                b.speedX = -b.speedX;
-                            }
-                            if (b.posX >= gameArea.offsetWidth - 50 - BUFFER_SIDES) {
-                                b.posX = gameArea.offsetWidth - 50 - BUFFER_SIDES; // Clamp to right buffer
-                                b.speedX = -b.speedX;
-                            }
-                            if (b.posY <= BUFFER_SIDES) {
-                                b.posY = BUFFER_SIDES; // Clamp to top buffer (below UI)
-                                b.speedY = -b.speedY;
-                            }
-                            if (b.posY >= gameArea.offsetHeight - 50 - BUFFER_BOTTOM) {
-                                b.posY = gameArea.offsetHeight - 50 - BUFFER_BOTTOM; // Clamp to bottom buffer
-                                b.speedY = -b.speedY;
-                            }
+                    for (let i = 0; i < bubbles.length; i++) {
+                        const bubbleA = bubbles[i];
+                        
+                        for (let j = i + 1; j < bubbles.length; j++) {
+                            const bubbleB = bubbles[j];
+                            const bubbleSizeA = getBubbleSize(bubbleA.element);
+                            const bubbleSizeB = getBubbleSize(bubbleB.element);
+                            const dx = bubbleA.posX + bubbleSizeA / 2 - (bubbleB.posX + bubbleSizeB / 2);
+                            const dy = bubbleA.posY + bubbleSizeA / 2 - (bubbleB.posY + bubbleSizeB / 2);
+                            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                            const minDistance = (bubbleSizeA + bubbleSizeB) / 2;
 
-                            b.element.style.left = b.posX + 'px';
-                            b.element.style.top = b.posY + 'px';
-                        });
+                            if (distance < minDistance) {
+                                const nx = dx / distance;
+                                const ny = dy / distance;
+                                const overlap = minDistance - distance;
 
-                        // Collision detection and resolution for bad bubbles only
-                        for (let i = 0; i < bubbles.length; i++) {
-                            const bubbleA = bubbles[i];
-                            if (bubbleA.element.id === 'goodBubble') continue;
+                                if (bubbleA === goodBubble || bubbleB === goodBubble) {
+                                    const redBubble = (bubbleA === goodBubble) ? bubbleB : bubbleA;
+                                    const blueBubble = (bubbleA === goodBubble) ? bubbleA : bubbleB;
 
-                            for (let j = i + 1; j < bubbles.length; j++) {
-                                const bubbleB = bubbles[j];
-                                if (bubbleB.element.id === 'goodBubble') continue;
+                                    const separationDistance = minDistance - distance;
+                                    redBubble.posX += nx * separationDistance;
+                                    redBubble.posY += ny * separationDistance;
 
-                                const dx = bubbleA.posX + 25 - (bubbleB.posX + 25);
-                                const dy = bubbleA.posY + 25 - (bubbleB.posY + 25);
-                                const distance = Math.sqrt(dx * dx + dy * dy);
-                                const minDistance = 50;
+                                    const dotProduct = redBubble.speedX * nx + redBubble.speedY * ny;
+                                    redBubble.speedX -= 2 * dotProduct * nx;
+                                    redBubble.speedY -= 2 * dotProduct * ny;
 
-                                if (distance < minDistance) {
-                                    const nx = dx / distance;
-                                    const ny = dy / distance;
+                                    const newDx = redBubble.posX + bubbleSizeB / 2 - (blueBubble.posX + bubbleSizeA / 2);
+                                    const newDy = redBubble.posY + bubbleSizeB / 2 - (blueBubble.posY + bubbleSizeA / 2);
+                                    const newDistance = Math.sqrt(newDx * newDx + newDy * newDy) || 1;
+                                    if (newDistance < minDistance) {
+                                        const newNx = newDx / newDistance;
+                                        const newNy = newDy / newDistance;
+                                        const additionalSeparation = minDistance - newDistance;
+                                        redBubble.posX += newNx * additionalSeparation;
+                                        redBubble.posY += newNy * additionalSeparation;
+                                    }
+
+                                    redBubble.element.style.left = redBubble.posX + 'px';
+                                    redBubble.element.style.top = redBubble.posY + 'px';
+                                } else {
                                     const relativeVelocityX = bubbleA.speedX - bubbleB.speedX;
                                     const relativeVelocityY = bubbleA.speedY - bubbleB.speedY;
                                     const impulse = 2 * (relativeVelocityX * nx + relativeVelocityY * ny) / 2;
@@ -434,21 +430,11 @@
                                     bubbleB.speedX += impulse * nx;
                                     bubbleB.speedY += impulse * ny;
 
-                                    const overlap = (minDistance - distance) / 2;
-                                    bubbleA.posX += nx * overlap;
-                                    bubbleA.posY += ny * overlap;
-                                    bubbleB.posX -= nx * overlap;
-                                    bubbleB.posY -= ny * overlap;
-
-                                    // Ensure bubbles stay within buffered area
-                                    if (bubbleA.posX < BUFFER_SIDES) bubbleA.posX = BUFFER_SIDES;
-                                    if (bubbleA.posX > gameArea.offsetWidth - 50 - BUFFER_SIDES) bubbleA.posX = gameArea.offsetWidth - 50 - BUFFER_SIDES;
-                                    if (bubbleA.posY < BUFFER_SIDES) bubbleA.posY = BUFFER_SIDES;
-                                    if (bubbleA.posY > gameArea.offsetHeight - 50 - BUFFER_BOTTOM) bubbleA.posY = gameArea.offsetHeight - 50 - BUFFER_BOTTOM;
-                                    if (bubbleB.posX < BUFFER_SIDES) bubbleB.posX = BUFFER_SIDES;
-                                    if (bubbleB.posX > gameArea.offsetWidth - 50 - BUFFER_SIDES) bubbleB.posX = gameArea.offsetWidth - 50 - BUFFER_SIDES;
-                                    if (bubbleB.posY < BUFFER_SIDES) bubbleB.posY = BUFFER_SIDES;
-                                    if (bubbleB.posY > gameArea.offsetHeight - 50 - BUFFER_BOTTOM) bubbleB.posY = gameArea.offsetHeight - 50 - BUFFER_BOTTOM;
+                                    const overlapHalf = overlap / 2;
+                                    bubbleA.posX += nx * overlapHalf;
+                                    bubbleA.posY += ny * overlapHalf;
+                                    bubbleB.posX -= nx * overlapHalf;
+                                    bubbleB.posY -= ny * overlapHalf;
 
                                     bubbleA.element.style.left = bubbleA.posX + 'px';
                                     bubbleA.element.style.top = bubbleA.posY + 'px';
@@ -457,226 +443,213 @@
                                 }
                             }
                         }
-
-                        enforceCrosshair();
-                        animationFrame = requestAnimationFrame(moveBubbles);
                     }
 
-                    function updateHighScores(name, score) {
-                        console.log(`Updating high scores - Name: ${name}, Score: ${score}`);
-                        highScores.push({ name: name.toUpperCase(), score: score });
-                        highScores.sort((a, b) => b.score - a.score);
-                        highScores = highScores.slice(0, 10);
-                        localStorage.setItem('highScores', JSON.stringify(highScores));
-                        console.log('High scores after update:', highScores);
+                    enforceCrosshair();
+                    animationFrame = requestAnimationFrame(moveBubbles);
+                } catch (error) {
+                    console.error('Error in moveBubbles:', error);
+                    animationFrame = requestAnimationFrame(moveBubbles);
+                }
+            }
+
+            function updateHighScores(name, score) {
+                highScores.push({ name: name.toUpperCase(), score: score });
+                highScores.sort((a, b) => b.score - a.score);
+                highScores = highScores.slice(0, 10);
+                localStorage.setItem('highScores', JSON.stringify(highScores));
+            }
+
+            function displayHighScores() {
+                highScoresDisplay.innerHTML = '<h3>Top 10 Scores</h3>' + 
+                    (highScores.length > 0 ? 
+                        highScores.map((entry, index) => `${index + 1}. ${entry.score} ${entry.name}`).join('<br>') : 
+                        'No high scores yet.');
+            }
+
+            function checkGameOver() {
+                if (score < 0 || timer <= 0) {
+                    if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                        animationFrame = null;
                     }
-
-                    function displayHighScores() {
-                        console.log('Displaying high scores - Current array:', highScores);
-                        highScoresDisplay.innerHTML = '<h3>Top 10 Scores</h3>' + 
-                            (highScores.length > 0 ? 
-                                highScores.map((entry, index) => `${index + 1}. ${entry.score} ${entry.name}`).join('<br>') : 
-                                'No high scores yet.');
-                        console.log('High scores rendered to DOM');
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
                     }
+                    nameEntryScreen.style.display = 'block';
+                    nameInput.value = '';
+                    nameInput.focus();
+                    bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
+                    scoreDisplay.style.display = 'none';
+                    timerDisplay.style.display = 'none';
+                    speedMeter.style.display = 'none';
+                    bubbles.forEach(b => b.element.style.display = 'none');
+                    document.getElementById('gameMusic').pause(); // Stop music when game ends
+                    document.getElementById('gameMusic').currentTime = 0; // Reset to start
+                }
+            }
 
-                    function checkGameOver() {
-                        if (score < 0 || timer <= 0) {
-                            console.log('Game Over triggered - Final Score:', score);
-                            if (animationFrame) {
-                                cancelAnimationFrame(animationFrame);
-                                animationFrame = null;
-                            }
-                            if (timerInterval) {
-                                clearInterval(timerInterval);
-                                timerInterval = null;
-                            }
-                            nameEntryScreen.style.display = 'block';
-                            nameInput.value = '';
-                            nameInput.focus();
-                            bubbles.forEach(b => {
-                                if (!b.element.id) b.element.remove();
-                            });
-                            scoreDisplay.style.display = 'none';
-                            timerDisplay.style.display = 'none';
-                            speedMeter.style.display = 'none';
-                            bubbles.forEach(b => b.element.style.display = 'none');
-                        }
-                    }
+            function startTimer() {
+                timer = 60;
+                timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+                timerInterval = setInterval(() => {
+                    timer -= 0.1;
+                    timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
+                    checkGameOver();
+                }, 100);
+            }
 
-                    function startTimer() {
-                        timer = 60;
-                        timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
-                        timerInterval = setInterval(() => {
-                            timer -= 0.1;
-                            timerDisplay.textContent = `Time: ${Math.ceil(timer)}`;
-                            checkGameOver();
-                        }, 100);
-                        console.log('Timer started');
-                    }
+            function addBubbleListeners(bubbleObj, isGood) {
+                bubbleObj.element.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    bubbleObj.element.style.display = 'none';
 
-                    function addBubbleListeners(bubbleObj, isGood) {
-                        bubbleObj.element.addEventListener('pointerdown', (e) => {
-                            e.preventDefault();
-                            
-                            // Hide the bubble immediately
-                            bubbleObj.element.style.display = 'none';
-                            
-                            // Play sound and update score
-                            const x = bubbleObj.posX + 25;
-                            const y = bubbleObj.posY + 25;
-                            if (isGood) {
-                                createConfetti(x, y, 'rgba(0, 255, 0, 0.8)');
-                                coinSound.currentTime = 0;
-                                coinSound.play();
-                                score += 10;
-                                clickCount++;
-                                if (clickCount <= MAX_CLICKS) {
-                                    bubbleObj.speedX = bubbleObj.speedX > 0 ? bubbleObj.speedX * 1.03 : bubbleObj.speedX * -1.03;
-                                    bubbleObj.speedY = bubbleObj.speedY > 0 ? bubbleObj.speedY * 1.03 : bubbleObj.speedY * -1.03;
-                                }
-                                updateSpeedMeter();
-                            } else {
-                                createConfetti(x, y, 'rgba(255, 0, 0, 0.8)');
-                                buzzerSound.currentTime = 0;
-                                buzzerSound.play();
-                                score -= 10;
-                            }
-                            scoreDisplay.textContent = `Score: ${score}`;
+                    const bubbleSize = getBubbleSize(bubbleObj.element);
+                    const x = bubbleObj.posX + bubbleSize / 2;
+                    const y = bubbleObj.posY + bubbleSize / 2;
 
-                            // Reposition the bubble to a new random location
-                            bubbleObj.posX = BUFFER_SIDES + Math.random() * (gameArea.offsetWidth - 2 * BUFFER_SIDES - 50);
-                            bubbleObj.posY = BUFFER_SIDES + Math.random() * (gameArea.offsetHeight - BUFFER_SIDES - BUFFER_BOTTOM - 50);
-                            
-                            // Immediately update the bubble’s position in the DOM
-                            bubbleObj.element.style.left = bubbleObj.posX + 'px';
-                            bubbleObj.element.style.top = bubbleObj.posY + 'px';
-                            
-                            // Make the bubble reappear
-                            bubbleObj.element.style.display = 'block';
-                            
-                            // Log for debugging
-                            console.log(`Bubble ${isGood ? 'good' : 'bad'} clicked - New position: (${bubbleObj.posX}, ${bubbleObj.posY})`);
+                    const goodBubbleObj = bubbles.find(b => b.element.id === 'goodBubble');
 
-                            // Check if the game should end
-                            checkGameOver();
-                        });
-                    }
-
-                    function startCountdown(callback) {
-                        console.log('Starting countdown');
-                        countdown.style.display = 'block';
-                        let count = 3;
-                        countdown.textContent = count;
-                        const countdownInterval = setInterval(() => {
-                            count--;
-                            if (count > 0) {
-                                countdown.textContent = count;
-                                console.log('Countdown:', count);
-                            } else if (count === 0) {
-                                countdown.textContent = 'GO!';
-                                countdown.classList.add('go');
-                                console.log('Countdown: GO!');
-                                clearInterval(countdownInterval);
-                                setTimeout(() => {
-                                    countdown.style.display = 'none';
-                                    countdown.classList.remove('go');
-                                    console.log('Countdown complete, calling callback');
-                                    callback();
-                                }, 500);
-                            }
-                        }, 1000);
-                    }
-
-                    function startGame() {
-                        console.log('Starting game with bubbles');
-                        if (animationFrame) {
-                            cancelAnimationFrame(animationFrame);
-                            animationFrame = null;
-                        }
-                        if (timerInterval) {
-                            clearInterval(timerInterval);
-                            timerInterval = null;
-                        }
-                        score = 0;
-                        clickCount = 0;
-                        scoreDisplay.textContent = `Score: ${score}`;
+                    if (isGood) {
+                        createConfetti(x, y, 'rgba(0, 255, 0, 0.8)');
+                        coinSound.currentTime = 0;
+                        coinSound.play();
+                        score += 10;
+                        clickCount++;
+                        goodBubbleObj.speedX *= 1.25;
+                        goodBubbleObj.speedY *= 1.25;
                         updateSpeedMeter();
-                        nameEntryScreen.style.display = 'none';
-                        gameOverScreen.style.display = 'none';
-                        splashScreen.style.display = 'none';
-                        bubbles.forEach(b => {
-                            if (!b.element.id) b.element.remove();
-                        });
-                        bubbles = [];
-                        const goodBubbleObj = createBubble(true);
-                        bubbles.push(goodBubbleObj);
-                        for (let i = 0; i < 100; i++) {
-                            bubbles.push(createBubble(false));
-                        }
-                        bubbles.forEach((b, index) => {
-                            b.element.style.left = b.posX + 'px';
-                            b.element.style.top = b.posY + 'px';
-                            b.element.style.display = 'block';
-                            addBubbleListeners(b, b.element === goodBubble);
-                        });
-                        scoreDisplay.style.display = 'block';
-                        timerDisplay.style.display = 'block';
-                        speedMeter.style.display = 'block';
-                        console.log('Game elements displayed, bubbles count:', bubbles.length);
-                        enforceCrosshair();
-                        moveBubbles();
-                        startTimer();
+                    } else {
+                        createConfetti(x, y, 'rgba(255, 0, 0, 0.8)');
+                        buzzerSound.currentTime = 0;
+                        buzzerSound.play();
+                        score -= 10;
+                        goodBubbleObj.speedX /= 1.25;
+                        goodBubbleObj.speedY /= 1.25;
                     }
+                    scoreDisplay.textContent = `Score: ${score}`;
 
-                    submitName.addEventListener('click', () => {
-                        const name = nameInput.value.trim();
-                        console.log('Submit clicked - Name entered:', name, 'Score at submission:', score);
-                        if (name.length === 3 && /^[A-Za-z]+$/.test(name)) {
-                            updateHighScores(name, score);
-                            nameEntryScreen.style.display = 'none';
-                            gameOverScreen.style.display = 'block';
-                            const upperName = name.toUpperCase();
-                            gameOverScreen.querySelector('.your-score').textContent = `Your Score: ${score} ${upperName}`;
-                            const rank = highScores.findIndex(entry => entry.score === score && entry.name === upperName) + 1;
-                            gameOverScreen.querySelector('.rank').textContent = rank > 0 ? `Rank: ${rank}` : 'Unranked';
-                            displayHighScores();
-                        } else {
-                            alert('Please enter exactly 3 letters (A-Z).');
-                        }
-                    });
+                    const bufferSides = bubbleSize * 0.5;
+                    const bufferBottom = bubbleSize * 1.5;
+                    bubbleObj.posX = bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize);
+                    bubbleObj.posY = bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize);
 
-                    nameInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            submitName.click();
-                        }
-                    });
+                    bubbleObj.element.style.left = bubbleObj.posX + 'px';
+                    bubbleObj.element.style.top = bubbleObj.posY + 'px';
+                    bubbleObj.element.style.display = 'block';
 
-                    shareButton.addEventListener('click', () => {
-                        const shareText = `I scored ${score} points in Bubble Tap! Can you beat me?`;
-                        navigator.clipboard.writeText(shareText).then(() => alert('Score copied to clipboard!'));
-                    });
+                    bubbleObj.element.offsetHeight; // Trigger reflow
 
-                    retryButton.addEventListener('click', () => {
-                        console.log('Retry clicked');
-                        splashSound.currentTime = 0;
-                        splashSound.play();
-                        startCountdown(startGame);
-                    });
-
-                    playNowButton.addEventListener('click', () => {
-                        console.log('Play Now clicked');
-                        splashScreen.style.display = 'none';
-                        splashSound.currentTime = 0;
-                        splashSound.play();
-                        startCountdown(startGame);
-                    });
-
-                    document.addEventListener('mousemove', enforceCrosshair);
-
-                    console.log('Page loaded, showing splash screen');
-                    splashScreen.style.display = 'flex';
+                    checkGameOver();
                 });
-            </script>
-        </body>
-    </html>
+            }
+
+            function startCountdown(callback) {
+                countdown.style.display = 'block';
+                let count = 3;
+                countdown.textContent = count;
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        countdown.textContent = count;
+                    } else if (count === 0) {
+                        countdown.textContent = 'GO!';
+                        countdown.classList.add('go');
+                        clearInterval(countdownInterval);
+                        setTimeout(() => {
+                            countdown.style.display = 'none';
+                            countdown.classList.remove('go');
+                            callback();
+                        }, 500);
+                    }
+                }, 1000);
+            }
+
+            function startGame() {
+                console.log('Starting game...');
+                if (animationFrame) cancelAnimationFrame(animationFrame);
+                if (timerInterval) clearInterval(timerInterval);
+                score = 0;
+                clickCount = 0;
+                scoreDisplay.textContent = `Score: ${score}`;
+                updateSpeedMeter();
+                nameEntryScreen.style.display = 'none';
+                gameOverScreen.style.display = 'none';
+                splashScreen.style.display = 'none';
+                bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
+                bubbles = [];
+                const goodBubbleObj = createBubble(true);
+                bubbles.push(goodBubbleObj);
+                for (let i = 0; i < 33; i++) {
+                    bubbles.push(createBubble(false));
+                }
+                bubbles.forEach((b, index) => {
+                    b.element.style.left = b.posX + 'px';
+                    b.element.style.top = b.posY + 'px';
+                    b.element.style.display = 'block';
+                    addBubbleListeners(b, b.element === goodBubble);
+                });
+                scoreDisplay.style.display = 'block';
+                timerDisplay.style.display = 'block';
+                speedMeter.style.display = 'block';
+                enforceCrosshair();
+                moveBubbles();
+                startTimer();
+                document.getElementById('gameMusic').play(); // Start music when game begins
+            }
+
+            submitName.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                if (name.length === 3 && /^[A-Za-z]+$/.test(name)) {
+                    updateHighScores(name, score);
+                    nameEntryScreen.style.display = 'none';
+                    gameOverScreen.style.display = 'flex';
+                    gameOverScreen.querySelector('.your-score').textContent = `Your Score: ${score} ${name.toUpperCase()}`;
+                    const rank = highScores.findIndex(entry => entry.score === score && entry.name === name.toUpperCase()) + 1;
+                    gameOverScreen.querySelector('.rank').textContent = rank > 0 ? `Rank: ${rank}` : 'Unranked';
+                    displayHighScores();
+                } else {
+                    alert('Please enter exactly 3 letters (A-Z).');
+                }
+            });
+
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitName.click();
+            });
+
+            shareButton.addEventListener('click', () => {
+                const shareText = `I scored ${score} points in Bubble Tap! Can you beat me?`;
+                navigator.clipboard.writeText(shareText).then(() => alert('Score copied to clipboard!'));
+            });
+
+            retryButton.addEventListener('click', () => {
+                console.log('Retry button clicked');
+                splashSound.currentTime = 0;
+                splashSound.play();
+                startCountdown(startGame);
+            });
+
+            playNowButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Play Now button clicked');
+                splashScreen.style.display = 'none';
+                splashSound.currentTime = 0;
+                splashSound.play();
+                startCountdown(startGame);
+            });
+
+            playNowButton.addEventListener('mouseover', () => {
+                console.log('Mouse over Play Now button');
+                playNowButton.style.cursor = 'pointer';
+            });
+
+            document.addEventListener('mousemove', enforceCrosshair);
+
+            console.log('Play Now button:', playNowButton);
+            splashScreen.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
+

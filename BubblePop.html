@@ -58,7 +58,7 @@
             flex: 1;
             text-align: center;
         }
-        #gameArea {
+        #gameCanvas {
             position: absolute;
             top: clamp(40px, 10vh, 60px);
             left: 0;
@@ -66,59 +66,14 @@
             height: calc(100% - clamp(40px, 10vh, 60px));
             margin: clamp(10px, 2vw, 20px) clamp(10px, 2vw, 20px) clamp(20px, 6vw, 60px);
             background-color: #000000;
-            overflow: hidden;
         }
-        .bubble {
-            width: 21px;
-            height: 21px;
-            border-radius: 50%;
+        #credits {
             position: absolute;
-            transition: none;
-            display: none;
-        }
-        #goodBubble {
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(0, 191, 255, 0.7) 70%);
-            width: 47px;
-            height: 47px;
-            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .badBubble {
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(255, 0, 0, 0.7) 70%);
-            width: 21px;
-            height: 21px;
-            box-shadow: 0 0 8px rgba(255, 0, 0, 0.5), inset 0 0 3px rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .goldenBubble {
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 215, 0, 0.9) 70%);
-            width: 30px;
-            height: 30px;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.7), inset 0 0 3px rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        .glitter {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: glitterFade 0.5s ease-out forwards;
-        }
-        @keyframes glitterFade {
-            0% { opacity: 0.8; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.5); }
-        }
-        .confetti {
-            width: clamp(5px, 2vw, 8px);
-            height: clamp(5px, 2vw, 8px);
-            border-radius: 50%;
-            position: absolute;
-            animation: confettiBurst 0.5s ease-out forwards;
-        }
-        @keyframes confettiBurst {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0.5); opacity: 0; }
+            bottom: clamp(5px, 1vh, 10px);
+            right: clamp(5px, 1vw, 10px);
+            font-size: clamp(10px, 3vw, 14px);
+            color: #cccccc;
+            z-index: 500;
         }
     </style>
 </head>
@@ -129,9 +84,7 @@
             <div id="timer">60</div>
             <div id="highScoreDisplay">Highscore: 0</div>
         </div>
-        <div id="gameArea">
-            <div id="goodBubble" class="bubble"></div>
-        </div>
+        <canvas id="gameCanvas"></canvas>
         <small id="credits">Created by @CptXenu using Grok AI</small>
     </div>
 
@@ -270,18 +223,10 @@
             width: 80%;
             box-sizing: border-box;
         }
-        #splashScreen small, #credits {
-            font-size: clamp(10px, 3vw, 14px);
-            color: #cccccc;
-        }
         #splashScreen small {
             margin-top: clamp(10px, 5vh, 20px);
-        }
-        #credits {
-            position: absolute;
-            bottom: clamp(5px, 1vh, 10px);
-            right: clamp(5px, 1vw, 10px);
-            z-index: 500;
+            font-size: clamp(10px, 3vw, 14px);
+            color: #cccccc;
         }
         @media (max-width: 400px) {
             #uiContainer {
@@ -293,7 +238,7 @@
             #score, #timer, #highScoreDisplay {
                 flex: none;
             }
-            #gameArea {
+            #gameCanvas {
                 top: clamp(60px, 15vh, 90px);
                 height: calc(100% - clamp(60px, 15vh, 90px));
             }
@@ -306,7 +251,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const goodBubble = document.getElementById('goodBubble');
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
             const scoreDisplay = document.getElementById('score');
             const timerDisplay = document.getElementById('timer');
             const highScoreDisplay = document.getElementById('highScoreDisplay');
@@ -325,7 +271,7 @@
             const countdown = document.getElementById('countdown');
             const splashScreen = document.getElementById('splashScreen');
             const playNowButton = document.getElementById('playNowButton');
-            const gameArea = document.getElementById('gameArea');
+            const gameContainer = document.getElementById('gameContainer');
             const gameMusic = document.getElementById('gameMusic');
             let score = 0;
             let bubbles = [];
@@ -338,8 +284,13 @@
 
             let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
 
-            function getBubbleSize(bubbleElement) {
-                return parseFloat(getComputedStyle(bubbleElement).width);
+            // Set canvas size
+            canvas.width = gameContainer.offsetWidth - 2 * clamp(10, 2, 20);
+            canvas.height = gameContainer.offsetHeight - clamp(40, 10, 60) - clamp(20, 6, 60);
+
+            // Utility function for clamp
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
             }
 
             function enforceCrosshair() {
@@ -349,63 +300,22 @@
             }
 
             function createBubble(isGood = false, isGolden = false) {
-                const bubble = isGood ? goodBubble : document.createElement('div');
-                if (!isGood && !isGolden) {
-                    bubble.className = 'badBubble bubble';
-                    gameArea.appendChild(bubble);
-                } else if (isGolden) {
-                    bubble.className = 'goldenBubble bubble';
-                    gameArea.appendChild(bubble);
-                }
-                const bubbleSize = getBubbleSize(bubble);
-                const bufferSides = bubbleSize * 0.5;
-                const bufferBottom = bubbleSize * 1.5;
-
+                const size = isGood ? 47 : (isGolden ? 30 : 21);
+                const bufferSides = size * 0.5;
+                const bufferBottom = size * 1.5;
                 const baseSpeed = isGood ? 1.5 : (isGolden ? 6.0 : 3.0);
                 const speedX = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
                 const speedY = baseSpeed * (Math.random() > 0.5 ? 1 : -1);
 
                 return {
-                    element: bubble,
-                    posX: bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize),
-                    posY: bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize),
+                    posX: bufferSides + Math.random() * (canvas.width - 2 * bufferSides),
+                    posY: bufferSides + Math.random() * (canvas.height - bufferSides - bufferBottom),
                     speedX: speedX,
                     speedY: speedY,
+                    size: size,
+                    isGood: isGood,
                     isGolden: isGolden
                 };
-            }
-
-            function createConfetti(x, y, color) {
-                const confettiCount = 8;
-                for (let i = 0; i < confettiCount; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.backgroundColor = color;
-                    confetti.style.left = x + 'px';
-                    confetti.style.top = y + 'px';
-                    const angle = Math.random() * 2 * Math.PI;
-                    const distance = Math.random() * 30 + 20;
-                    const dx = Math.cos(angle) * distance;
-                    const dy = Math.sin(angle) * distance;
-                    confetti.style.setProperty('--dx', `${dx}px`);
-                    confetti.style.setProperty('--dy', `${dy}px`);
-                    gameArea.appendChild(confetti);
-                    setTimeout(() => confetti.remove(), 500);
-                }
-            }
-
-            function createGlitter(x, y) {
-                const colors = ['rgba(255, 255, 255, 0.8)', 'rgba(255, 215, 0, 0.8)'];
-                const glitterCount = 2;
-                for (let i = 0; i < glitterCount; i++) {
-                    const glitter = document.createElement('div');
-                    glitter.className = 'glitter';
-                    glitter.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    glitter.style.left = (x + Math.random() * 5 - 2.5) + 'px';
-                    glitter.style.top = (y + Math.random() * 5 - 2.5) + 'px';
-                    gameArea.appendChild(glitter);
-                    setTimeout(() => glitter.remove(), 500);
-                }
             }
 
             function updateHighScoreDisplay() {
@@ -416,11 +326,8 @@
             function spawnGoldenBubble() {
                 if (!goldenBubble && timer > 0) {
                     goldenBubble = createBubble(false, true);
-                    goldenBubble.element.style.display = 'block';
-                    addGoldenBubbleListener(goldenBubble);
                     setTimeout(() => {
                         if (goldenBubble) {
-                            goldenBubble.element.remove();
                             goldenBubble = null;
                         }
                     }, 4000);
@@ -428,183 +335,130 @@
                 setTimeout(spawnGoldenBubble, 10000);
             }
 
-            // Detect mobile device for optimizations
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-            function moveBubbles(timestamp) {
-                try {
-                    // Throttle updates on mobile to ~30fps (every 33ms)
-                    if (!isMobile || !this.lastUpdate || (timestamp - this.lastUpdate > 33)) {
-                        this.lastUpdate = timestamp;
+            function drawBubbles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                        bubbles.forEach(b => {
-                            const bubbleSize = getBubbleSize(b.element);
-                            const bufferSides = bubbleSize * 0.5;
-                            const bufferBottom = bubbleSize * 1.5;
-
-                            b.posX += b.speedX;
-                            b.posY += b.speedY;
-
-                            if (b.posX <= bufferSides) {
-                                b.posX = bufferSides;
-                                b.speedX = -b.speedX;
-                            }
-                            if (b.posX >= gameArea.offsetWidth - bubbleSize - bufferSides) {
-                                b.posX = gameArea.offsetWidth - bubbleSize - bufferSides;
-                                b.speedX = -b.speedX;
-                            }
-                            if (b.posY <= bufferSides) {
-                                b.posY = bufferSides;
-                                b.speedY = -b.speedY;
-                            }
-                            if (b.posY >= gameArea.offsetHeight - bubbleSize - bufferBottom) {
-                                b.posY = gameArea.offsetHeight - bubbleSize - bufferBottom;
-                                b.speedY = -b.speedY;
-                            }
-
-                            // Use CSS transforms for smoother updates
-                            b.element.style.transform = `translate(${b.posX}px, ${b.posY}px)`;
-                        });
-
-                        if (goldenBubble) {
-                            const bubbleSize = getBubbleSize(goldenBubble.element);
-
-                            goldenBubble.posX += goldenBubble.speedX;
-                            goldenBubble.posY += goldenBubble.speedY;
-
-                            // Reduce glitter frequency on mobile
-                            if (!isMobile || Math.random() < 0.5) {
-                                createGlitter(goldenBubble.posX + bubbleSize / 2, goldenBubble.posY + bubbleSize / 2);
-                            }
-
-                            if (goldenBubble.posX + bubbleSize < 0) {
-                                goldenBubble.posX = gameArea.offsetWidth;
-                            } else if (goldenBubble.posX > gameArea.offsetWidth) {
-                                goldenBubble.posX = -bubbleSize;
-                            }
-                            if (goldenBubble.posY + bubbleSize < 0) {
-                                goldenBubble.posY = gameArea.offsetHeight;
-                            } else if (goldenBubble.posY > gameArea.offsetHeight) {
-                                goldenBubble.posY = -bubbleSize;
-                            }
-
-                            goldenBubble.element.style.transform = `translate(${goldenBubble.posX}px, ${goldenBubble.posY}px)`;
-                        }
-
-                        const goodBubble = bubbles.find(b => b.element.id === 'goodBubble');
-
-                        // Optimize collision detection: only check blue bubble vs others on mobile
-                        if (!isMobile) {
-                            for (let i = 0; i < bubbles.length; i++) {
-                                const bubbleA = bubbles[i];
-                                
-                                for (let j = i + 1; j < bubbles.length; j++) {
-                                    const bubbleB = bubbles[j];
-                                    const bubbleSizeA = getBubbleSize(bubbleA.element);
-                                    const bubbleSizeB = getBubbleSize(bubbleB.element);
-                                    const dx = bubbleA.posX + bubbleSizeA / 2 - (bubbleB.posX + bubbleSizeB / 2);
-                                    const dy = bubbleA.posY + bubbleSizeA / 2 - (bubbleB.posY + bubbleSizeB / 2);
-                                    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-                                    const minDistance = bubbleSizeA / 2 + bubbleSizeB / 2;
-
-                                    if (distance < minDistance) {
-                                        const nx = dx / distance;
-                                        const ny = dy / distance;
-                                        const overlap = minDistance - distance;
-
-                                        if (bubbleA === goodBubble || bubbleB === goodBubble) {
-                                            const redBubble = (bubbleA === goodBubble) ? bubbleB : bubbleA;
-                                            const blueBubble = (bubbleA === goodBubble) ? bubbleA : bubbleB;
-
-                                            redBubble.posX += nx * overlap;
-                                            redBubble.posY += ny * overlap;
-
-                                            const dotProduct = redBubble.speedX * nx + redBubble.speedY * ny;
-                                            redBubble.speedX -= 2 * dotProduct * nx;
-                                            redBubble.speedY -= 2 * dotProduct * ny;
-
-                                            const newDx = redBubble.posX + bubbleSizeB / 2 - (blueBubble.posX + bubbleSizeA / 2);
-                                            const newDy = redBubble.posY + bubbleSizeB / 2 - (blueBubble.posY + bubbleSizeA / 2);
-                                            const newDistance = Math.sqrt(newDx * newDx + newDy * newDy) || 1;
-                                            if (newDistance < minDistance) {
-                                                const newNx = newDx / newDistance;
-                                                const newNy = newDy / newDistance;
-                                                const additionalSeparation = minDistance - newDistance + 0.1;
-                                                redBubble.posX += newNx * additionalSeparation;
-                                                redBubble.posY += newNy * additionalSeparation;
-                                            }
-
-                                            redBubble.element.style.transform = `translate(${redBubble.posX}px, ${redBubble.posY}px)`;
-                                        } else {
-                                            const relativeVelocityX = bubbleA.speedX - bubbleB.speedX;
-                                            const relativeVelocityY = bubbleA.speedY - bubbleB.speedY;
-                                            const dotProduct = relativeVelocityX * nx + relativeVelocityY * ny;
-                                            const impulse = 2 * dotProduct / 2;
-
-                                            bubbleA.speedX -= impulse * nx;
-                                            bubbleA.speedY -= impulse * ny;
-                                            bubbleB.speedX += impulse * nx;
-                                            bubbleB.speedY += impulse * ny;
-
-                                            const overlapHalf = overlap / 2;
-                                            bubbleA.posX += nx * overlapHalf;
-                                            bubbleA.posY += ny * overlapHalf;
-                                            bubbleB.posX -= nx * overlapHalf;
-                                            bubbleB.posY -= ny * overlapHalf;
-
-                                            bubbleA.element.style.transform = `translate(${bubbleA.posX}px, ${bubbleA.posY}px)`;
-                                            bubbleB.element.style.transform = `translate(${bubbleB.posX}px, ${bubbleB.posY}px)`;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // On mobile, only check blue vs red collisions
-                            bubbles.forEach(bubbleB => {
-                                if (bubbleB !== goodBubble) {
-                                    const bubbleSizeA = getBubbleSize(goodBubble.element);
-                                    const bubbleSizeB = getBubbleSize(bubbleB.element);
-                                    const dx = goodBubble.posX + bubbleSizeA / 2 - (bubbleB.posX + bubbleSizeB / 2);
-                                    const dy = goodBubble.posY + bubbleSizeA / 2 - (bubbleB.posY + bubbleSizeB / 2);
-                                    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-                                    const minDistance = bubbleSizeA / 2 + bubbleSizeB / 2;
-
-                                    if (distance < minDistance) {
-                                        const nx = dx / distance;
-                                        const ny = dy / distance;
-                                        const overlap = minDistance - distance;
-
-                                        bubbleB.posX += nx * overlap;
-                                        bubbleB.posY += ny * overlap;
-
-                                        const dotProduct = bubbleB.speedX * nx + bubbleB.speedY * ny;
-                                        bubbleB.speedX -= 2 * dotProduct * nx;
-                                        bubbleB.speedY -= 2 * dotProduct * ny;
-
-                                        const newDx = bubbleB.posX + bubbleSizeB / 2 - (goodBubble.posX + bubbleSizeA / 2);
-                                        const newDy = bubbleB.posY + bubbleSizeB / 2 - (goodBubble.posY + bubbleSizeA / 2);
-                                        const newDistance = Math.sqrt(newDx * newDx + newDy * newDy) || 1;
-                                        if (newDistance < minDistance) {
-                                            const newNx = newDx / newDistance;
-                                            const newNy = newDy / newDistance;
-                                            const additionalSeparation = minDistance - newDistance + 0.1;
-                                            bubbleB.posX += newNx * additionalSeparation;
-                                            bubbleB.posY += newNy * additionalSeparation;
-                                        }
-
-                                        bubbleB.element.style.transform = `translate(${bubbleB.posX}px, ${bubbleB.posY}px)`;
-                                    }
-                                }
-                            });
-                        }
-
-                        enforceCrosshair();
+                bubbles.forEach(b => {
+                    ctx.beginPath();
+                    ctx.arc(b.posX, b.posY, b.size / 2, 0, Math.PI * 2);
+                    if (b.isGood) {
+                        const gradient = ctx.createRadialGradient(b.posX - b.size * 0.3, b.posY - b.size * 0.3, 0, b.posX, b.posY, b.size / 2);
+                        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+                        gradient.addColorStop(0.7, 'rgba(0, 191, 255, 0.7)');
+                        ctx.fillStyle = gradient;
+                    } else {
+                        const gradient = ctx.createRadialGradient(b.posX - b.size * 0.3, b.posY - b.size * 0.3, 0, b.posX, b.posY, b.size / 2);
+                        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+                        gradient.addColorStop(0.7, 'rgba(255, 0, 0, 0.7)');
+                        ctx.fillStyle = gradient;
                     }
-                    animationFrame = requestAnimationFrame(moveBubbles);
-                } catch (error) {
-                    console.error('Error in moveBubbles:', error);
-                    animationFrame = requestAnimationFrame(moveBubbles);
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.stroke();
+                });
+
+                if (goldenBubble) {
+                    ctx.beginPath();
+                    ctx.arc(goldenBubble.posX, goldenBubble.posY, goldenBubble.size / 2, 0, Math.PI * 2);
+                    const gradient = ctx.createRadialGradient(goldenBubble.posX - goldenBubble.size * 0.3, goldenBubble.posY - goldenBubble.size * 0.3, 0, goldenBubble.posX, goldenBubble.posY, goldenBubble.size / 2);
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                    gradient.addColorStop(0.7, 'rgba(255, 215, 0, 0.9)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.stroke();
                 }
+            }
+
+            function moveBubbles(timestamp) {
+                if (!this.lastTime) this.lastTime = timestamp;
+                const deltaTime = (timestamp - this.lastTime) / 1000; // Seconds
+                this.lastTime = timestamp;
+
+                bubbles.forEach(b => {
+                    const bufferSides = b.size * 0.5;
+                    const bufferBottom = b.size * 1.5;
+
+                    b.posX += b.speedX * deltaTime * 60; // Normalize to 60fps
+                    b.posY += b.speedY * deltaTime * 60;
+
+                    if (b.posX <= bufferSides) {
+                        b.posX = bufferSides;
+                        b.speedX = -b.speedX;
+                    }
+                    if (b.posX >= canvas.width - bufferSides) {
+                        b.posX = canvas.width - bufferSides;
+                        b.speedX = -b.speedX;
+                    }
+                    if (b.posY <= bufferSides) {
+                        b.posY = bufferSides;
+                        b.speedY = -b.speedY;
+                    }
+                    if (b.posY >= canvas.height - bufferBottom) {
+                        b.posY = canvas.height - bufferBottom;
+                        b.speedY = -b.speedY;
+                    }
+                });
+
+                if (goldenBubble) {
+                    const bufferSides = goldenBubble.size * 0.5;
+                    const bufferBottom = goldenBubble.size * 1.5;
+
+                    goldenBubble.posX += goldenBubble.speedX * deltaTime * 60;
+                    goldenBubble.posY += goldenBubble.speedY * deltaTime * 60;
+
+                    if (goldenBubble.posX + goldenBubble.size < 0) {
+                        goldenBubble.posX = canvas.width;
+                    } else if (goldenBubble.posX > canvas.width) {
+                        goldenBubble.posX = -goldenBubble.size;
+                    }
+                    if (goldenBubble.posY + goldenBubble.size < 0) {
+                        goldenBubble.posY = canvas.height;
+                    } else if (goldenBubble.posY > canvas.height) {
+                        goldenBubble.posY = -goldenBubble.size;
+                    }
+                }
+
+                const goodBubble = bubbles.find(b => b.isGood);
+                bubbles.forEach(b => {
+                    if (!b.isGood) {
+                        const dx = goodBubble.posX - b.posX;
+                        const dy = goodBubble.posY - b.posY;
+                        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                        const minDistance = (goodBubble.size + b.size) / 2;
+
+                        if (distance < minDistance) {
+                            const nx = dx / distance;
+                            const ny = dy / distance;
+                            const overlap = minDistance - distance;
+
+                            b.posX += nx * overlap;
+                            b.posY += ny * overlap;
+
+                            const dotProduct = b.speedX * nx + b.speedY * ny;
+                            b.speedX -= 2 * dotProduct * nx;
+                            b.speedY -= 2 * dotProduct * ny;
+
+                            const newDx = b.posX - goodBubble.posX;
+                            const newDy = b.posY - goodBubble.posY;
+                            const newDistance = Math.sqrt(newDx * newDx + newDy * newDy) || 1;
+                            if (newDistance < minDistance) {
+                                const newNx = newDx / newDistance;
+                                const newNy = newDy / newDistance;
+                                const additionalSeparation = minDistance - newDistance + 0.1;
+                                b.posX += newNx * additionalSeparation;
+                                b.posY += newNy * additionalSeparation;
+                            }
+                        }
+                    }
+                });
+
+                drawBubbles();
+                animationFrame = requestAnimationFrame(moveBubbles);
             }
 
             function updateHighScores(name, score) {
@@ -635,17 +489,14 @@
                     nameEntryScreen.style.display = 'block';
                     nameInput.value = '';
                     nameInput.focus();
-                    bubbles.forEach(b => { if (!b.element.id) b.element.remove(); });
-                    if (goldenBubble) {
-                        goldenBubble.element.remove();
-                        goldenBubble = null;
-                    }
+                    bubbles = [];
+                    goldenBubble = null;
                     scoreDisplay.style.display = 'none';
                     timerDisplay.style.display = 'none';
                     highScoreDisplay.style.display = 'none';
-                    bubbles.forEach(b => b.element.style.display = 'none');
                     gameMusic.pause();
                     gameMusic.currentTime = 0;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             }
 
@@ -659,98 +510,74 @@
                 }, 100);
             }
 
-            function addBubbleListeners(bubbleObj, isGood) {
-                const handleClick = (e) => {
-                    e.preventDefault();
-                    bubbleObj.element.style.display = 'none';
-
-                    const bubbleSize = getBubbleSize(bubbleObj.element);
-                    const x = bubbleObj.posX + bubbleSize / 2;
-                    const y = bubbleObj.posY + bubbleSize / 2;
-
-                    const goodBubbleObj = bubbles.find(b => b.element.id === 'goodBubble');
-
-                    if (isGood) {
-                        // Reduce confetti on mobile
-                        if (!isMobile || Math.random() < 0.5) {
-                            createConfetti(x, y, 'rgba(0, 255, 0, 0.8)');
-                        }
+            function handleCanvasClick(x, y) {
+                const goodBubble = bubbles.find(b => b.isGood);
+                if (goodBubble) {
+                    const dx = x - goodBubble.posX;
+                    const dy = y - goodBubble.posY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < goodBubble.size / 2) {
                         coinSound.currentTime = 0;
                         coinSound.play();
                         score += 10;
-                        goodBubbleObj.speedX *= 1.01;
-                        goodBubbleObj.speedY *= 1.01;
-                    } else {
-                        if (!isMobile || Math.random() < 0.5) {
-                            createConfetti(x, y, 'rgba(255, 0, 0, 0.8)');
+                        const bufferSides = goodBubble.size * 0.5;
+                        const bufferBottom = goodBubble.size * 1.5;
+                        goodBubble.posX = bufferSides + Math.random() * (canvas.width - 2 * bufferSides);
+                        goodBubble.posY = bufferSides + Math.random() * (canvas.height - bufferSides - bufferBottom);
+                        goodBubble.speedX *= 1.01;
+                        goodBubble.speedY *= 1.01;
+                        scoreDisplay.textContent = `${score}`;
+                        checkGameOver();
+                        return;
+                    }
+                }
+
+                bubbles.forEach(b => {
+                    if (!b.isGood) {
+                        const dx = x - b.posX;
+                        const dy = y - b.posY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < b.size / 2) {
+                            buzzerSound.currentTime = 0;
+                            buzzerSound.play();
+                            score -= 10;
+                            const goodBubble = bubbles.find(b => b.isGood);
+                            if (goodBubble) {
+                                goodBubble.speedX /= 1.5;
+                                goodBubble.speedY /= 1.5;
+                            }
+                            const bufferSides = b.size * 0.5;
+                            const bufferBottom = b.size * 1.5;
+                            b.posX = bufferSides + Math.random() * (canvas.width - 2 * bufferSides);
+                            b.posY = bufferSides + Math.random() * (canvas.height - bufferSides - bufferBottom);
+                            scoreDisplay.textContent = `${score}`;
+                            checkGameOver();
+                            return;
                         }
-                        buzzerSound.currentTime = 0;
-                        buzzerSound.play();
-                        score -= 10;
-                        goodBubbleObj.speedX /= 1.5;
-                        goodBubbleObj.speedY /= 1.5;
                     }
-                    scoreDisplay.textContent = `${score}`;
+                });
 
-                    const bufferSides = bubbleSize * 0.5;
-                    const bufferBottom = bubbleSize * 1.5;
-                    bubbleObj.posX = bufferSides + Math.random() * (gameArea.offsetWidth - 2 * bufferSides - bubbleSize);
-                    bubbleObj.posY = bufferSides + Math.random() * (gameArea.offsetHeight - bufferSides - bufferBottom - bubbleSize);
-
-                    bubbleObj.element.style.transform = `translate(${bubbleObj.posX}px, ${bubbleObj.posY}px)`;
-                    bubbleObj.element.style.display = 'block';
-
-                    bubbleObj.element.offsetHeight;
-
-                    checkGameOver();
-                };
-
-                bubbleObj.element.removeEventListener('pointerdown', bubbleObj.clickHandler);
-                bubbleObj.clickHandler = handleClick;
-                bubbleObj.element.addEventListener('pointerdown', bubbleObj.clickHandler);
+                if (goldenBubble) {
+                    const dx = x - goldenBubble.posX;
+                    const dy = y - goldenBubble.posY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < goldenBubble.size / 2) {
+                        confettiPopSound.currentTime = 0;
+                        confettiPopSound.play();
+                        score += 50;
+                        scoreDisplay.textContent = `${score}`;
+                        goldenBubble = null;
+                        checkGameOver();
+                    }
+                }
             }
 
-            function addGoldenBubbleListener(bubbleObj) {
-                const handleGoldenClick = (e) => {
-                    e.preventDefault();
-                    bubbleObj.element.style.display = 'none';
-                    const bubbleSize = getBubbleSize(bubbleObj.element);
-                    const x = bubbleObj.posX + bubbleSize / 2;
-                    const y = bubbleObj.posY + bubbleSize / 2;
-
-                    // Reduce confetti count on mobile
-                    const explosionCount = isMobile ? 5 : 10;
-                    for (let i = 0; i < explosionCount; i++) {
-                        const confetti = document.createElement('div');
-                        confetti.className = 'confetti';
-                        confetti.style.backgroundColor = 'rgba(255, 215, 0, 0.9)';
-                        confetti.style.left = x + 'px';
-                        confetti.style.top = y + 'px';
-                        const angle = Math.random() * 2 * Math.PI;
-                        const distance = Math.random() * 30 + 20;
-                        const dx = Math.cos(angle) * distance;
-                        const dy = Math.sin(angle) * distance;
-                        confetti.style.setProperty('--dx', `${dx}px`);
-                        confetti.style.setProperty('--dy', `${dy}px`);
-                        gameArea.appendChild(confetti);
-                        setTimeout(() => confetti.remove(), 500);
-                    }
-
-                    confettiPopSound.currentTime = 0;
-                    confettiPopSound.play();
-                    score += 50;
-                    scoreDisplay.textContent = `${score}`;
-
-                    bubbleObj.element.remove();
-                    goldenBubble = null;
-
-                    checkGameOver();
-                };
-
-                bubbleObj.element.removeEventListener('pointerdown', bubbleObj.goldenClickHandler);
-                bubbleObj.goldenClickHandler = handleGoldenClick;
-                bubbleObj.element.addEventListener('pointerdown', bubbleObj.goldenClickHandler);
-            }
+            canvas.addEventListener('pointerdown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                handleCanvasClick(x, y);
+            });
 
             function startCountdown(callback) {
                 countdown.style.display = 'block';
@@ -784,34 +611,18 @@
                 nameEntryScreen.style.display = 'none';
                 gameOverScreen.style.display = 'none';
                 splashScreen.style.display = 'none';
-                bubbles.forEach(b => {
-                    if (b.element.id !== 'goodBubble') {
-                        b.element.remove();
-                    } else {
-                        b.element.removeEventListener('pointerdown', b.clickHandler);
-                    }
-                });
-                if (goldenBubble) {
-                    goldenBubble.element.removeEventListener('pointerdown', goldenBubble.goldenClickHandler);
-                    goldenBubble.element.remove();
-                    goldenBubble = null;
-                }
                 bubbles = [];
-                const goodBubbleObj = createBubble(true);
-                bubbles.push(goodBubbleObj);
-                for (let i = 0; i < 33; i++) {
+                goldenBubble = null;
+                const goodBubble = createBubble(true);
+                bubbles.push(goodBubble);
+                for (let i = 0; i < 15; i++) { // Reduced from 33 to 15
                     bubbles.push(createBubble(false));
                 }
-                bubbles.forEach((b, index) => {
-                    b.element.style.transform = `translate(${b.posX}px, ${b.posY}px)`; // Set initial position with transform
-                    b.element.style.display = 'block';
-                    addBubbleListeners(b, b.element === goodBubble);
-                });
                 scoreDisplay.style.display = 'block';
                 timerDisplay.style.display = 'block';
                 highScoreDisplay.style.display = 'block';
                 enforceCrosshair();
-                moveBubbles();
+                moveBubbles(performance.now());
                 startTimer();
                 gameMusic.play();
                 setTimeout(spawnGoldenBubble, 10000);
